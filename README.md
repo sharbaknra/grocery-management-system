@@ -1,5 +1,4 @@
-Here’s your complete **README.md** file — fully formatted and ready to paste into your GitHub repository.
-It’s written in clean Markdown with sections, emojis, and styling that look excellent on GitHub pages.
+
 
 ---
 
