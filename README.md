@@ -143,15 +143,6 @@ Frontend (React + Vite)  →  Backend (Node.js + Express)  →  Database (MySQL)
 | 2.3    | Supplier Module | CRUD for supplier data and linking with products   |
 | 2.4    | Sales & Reports | Sales recording and summarized reports             |
 
----
-
-## 🧠 Authors
-
-**Muhammad Saad Ali** – Database Architect
-**Qalab-e-Abbas** – Requirements Analyst
-
-**University of Mianwali**
-*Bachelor of Software Engineering (BSE-F23)*
 
 ---
 
@@ -192,7 +183,6 @@ grocery-management-system/
 
 ## 💬 Notes
 
-* This repository represents **Milestone 2.4** of the project.
 * **Billing System** is *not included* (planned for later).
 * Ensure MySQL is running before starting the backend.
 * Always start backend **before** frontend when testing.
