@@ -61,7 +61,7 @@ Frontend (React + Vite)  →  Backend (Node.js + Express)  →  Database (MySQL)
 2. Create a new database:
    ```sql
    CREATE DATABASE grocery_management;
-````
+
 
 3. Import the provided `gms_schema.sql` file into the database.
 4. Verify tables are created (products, suppliers, users, sales, etc.).
