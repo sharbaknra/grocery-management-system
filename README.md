@@ -3,7 +3,7 @@ It’s written in clean Markdown with sections, emojis, and styling that look ex
 
 ---
 
-```markdown
+
 # 🛒 Grocery Management System (GMS)
 
 A **database-driven management system** designed for small grocery stores to manage **inventory**, **suppliers**, **sales**, and **staff operations** in one centralized platform.  
