@@ -7,6 +7,7 @@ dotenv.config();
 const db = require('./config/db'); // MySQL connection
 const itemRoutes = require('./routes/itemRoutes');
 const userRoutes = require('./routes/userRoutes');
+const User = require('./models/userModel');
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ message: 'Internal server error' });
 });
+
+// Seed admin user on server start
+User.seedAdmin();
 
 // === SERVER START ===
 const PORT = process.env.PORT || 5000;

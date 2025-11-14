@@ -2,15 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const authenticateToken = require('../middleware/authMiddleware');
+const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
-// Register a new user
+// Public routes
 router.post('/register', userController.register);
-
-// Login user
 router.post('/login', userController.login);
 
-// Get all users (protected route)
-router.get('/', authenticateToken, userController.getAllUsers);
+// 🔒 Protected: only admins can list all users
+router.get('/', verifyToken, verifyAdmin, userController.getAllUsers);
 
 module.exports = router;

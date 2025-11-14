@@ -6,20 +6,20 @@ const db = require('../config/db');
 const Item = {
   // Get all items
   getAll: async () => {
-    const [rows] = await db.query('SELECT * FROM items');
+    const [rows] = await db.promise().query('SELECT * FROM items');
     return rows;
   },
 
   // Get single item by ID
   getById: async (id) => {
-    const [rows] = await db.query('SELECT * FROM items WHERE id = ?', [id]);
+    const [rows] = await db.promise().query('SELECT * FROM items WHERE id = ?', [id]);
     return rows[0];
   },
 
   // Add a new item
   create: async (data) => {
     const { name, category, price, quantity } = data;
-    const [result] = await db.query(
+    const [result] = await db.promise().query(
       'INSERT INTO items (name, category, price, quantity) VALUES (?, ?, ?, ?)',
       [name, category, price, quantity]
     );
@@ -29,7 +29,7 @@ const Item = {
   // Update an item
   update: async (id, data) => {
     const { name, category, price, quantity } = data;
-    await db.query(
+    await db.promise().query(
       'UPDATE items SET name = ?, category = ?, price = ?, quantity = ? WHERE id = ?',
       [name, category, price, quantity, id]
     );
@@ -38,7 +38,7 @@ const Item = {
 
   // Delete an item
   delete: async (id) => {
-    await db.query('DELETE FROM items WHERE id = ?', [id]);
+    await db.promise().query('DELETE FROM items WHERE id = ?', [id]);
     return { message: 'Item deleted successfully' };
   },
 };

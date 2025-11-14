@@ -25,5 +25,7 @@ pool.getConnection((err, connection) => {
   }
 });
 
-// export promise-based pool for async/await use
-module.exports = pool.promise();
+// export pool directly to support both callbacks and promises
+// For callbacks: db.query(sql, params, callback)
+// For promises: db.promise().query(sql, params)
+module.exports = pool;
