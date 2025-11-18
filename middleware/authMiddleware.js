@@ -1,34 +1,27 @@
+// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const { tokenBlacklist } = require('../utils/tokenBlacklist');
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Extract "Bearer <token>"
 
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
+  // No token?
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Access denied. No token provided.' });
   }
 
-  // Check blacklist - reject revoked tokens immediately
-  if (tokenBlacklist.includes(token)) {
-    return res.status(401).json({ message: 'Token has been revoked' });
+  // Expected format: "Bearer <token>"
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'Invalid token format.' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // attach decoded user to request
+    req.user = decoded; // attach decoded user data
     next();
   } catch (err) {
-    return res.status(403).json({ message: 'Invalid token' });
+    return res.status(401).json({ message: 'Invalid or expired token.' });
   }
 };
 
-const verifyAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Access denied. Admins only.' });
-  }
-  next();
-};
-
-module.exports = { verifyToken, verifyAdmin };
-
+module.exports = verifyToken;
