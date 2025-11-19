@@ -7,6 +7,7 @@ dotenv.config();
 const db = require('./config/db'); // MySQL connection
 const itemRoutes = require('./routes/itemRoutes');
 const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
 const User = require('./models/userModel');
 
 const app = express();
@@ -14,10 +15,12 @@ const app = express();
 // === MIDDLEWARE ===
 app.use(cors());
 app.use(express.json()); // ✅ Enables JSON body parsing
+app.use('/uploads', express.static('uploads'));
 
 // === ROUTES ===
 app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
 
 // === ERROR HANDLING MIDDLEWARE ===
 app.use((err, req, res, next) => {
