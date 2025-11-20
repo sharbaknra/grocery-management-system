@@ -1,119 +1,119 @@
 const db = require("../config/db");
 
-// ========================
-// CREATE PRODUCT
-// ========================
-exports.createProduct = (data, callback) => {
+const Product = {
+  // Create Product (Quantity column removed from SQL query)
+  create: async (data) => {
     const sql = `
-        INSERT INTO products 
-        (name, category, price, quantity, barcode, description, expiry_date, supplier, image_url)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+            INSERT INTO products 
+            (name, category, price, barcode, description, expiry_date, supplier, image_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
     const values = [
-        data.name,
-        data.category,
-        data.price,
-        data.quantity,
-        data.barcode,
-        data.description,
-        data.expiry_date,
-        data.supplier,
-        data.image_url
+      data.name,
+      data.category,
+      data.price,
+      data.barcode,
+      data.description,
+      data.expiry_date,
+      data.supplier,
+      data.image_url,
     ];
-    db.query(sql, values, callback);
-};
+    const [result] = await db.promise().query(sql, values);
+    return result.insertId;
+  },
 
-// ========================
-// GET ALL PRODUCTS
-// ========================
-exports.getAllProducts = (callback) => {
-    const sql = `SELECT * FROM products ORDER BY created_at DESC`;
-    db.query(sql, callback);
-};
-
-// ========================
-// GET PRODUCT BY ID
-// ========================
-exports.getProductById = (id, callback) => {
-    const sql = `SELECT * FROM products WHERE id = ?`;
-    db.query(sql, [id], callback);
-};
-
-// ========================
-// UPDATE PRODUCT
-// ========================
-exports.updateProduct = (id, data, callback) => {
+  // Get All (ADDED: JOIN stock s ON p.id = s.product_id)
+  getAll: async () => {
     const sql = `
-        UPDATE products SET 
-        name = ?, category = ?, price = ?, quantity = ?, 
-        barcode = ?, description = ?, expiry_date = ?, 
-        supplier = ?, image_url = ?
-        WHERE id = ?
-    `;
-    const values = [
-        data.name,
-        data.category,
-        data.price,
-        data.quantity,
-        data.barcode,
-        data.description,
-        data.expiry_date,
-        data.supplier,
-        data.image_url,
-        id
-    ];
-    db.query(sql, values, callback);
-};
+            SELECT p.*, s.quantity, s.min_stock_level 
+            FROM products p
+            LEFT JOIN stock s ON p.id = s.product_id
+            ORDER BY p.created_at DESC
+        `;
+    const [rows] = await db.promise().query(sql);
+    return rows;
+  },
 
-// ========================
-// DELETE PRODUCT
-// ========================
-exports.deleteProduct = (id, callback) => {
+  // Get By ID (ADDED: JOIN)
+  getById: async (id) => {
+    const sql = `
+            SELECT p.*, s.quantity, s.min_stock_level 
+            FROM products p
+            LEFT JOIN stock s ON p.id = s.product_id
+            WHERE p.id = ?
+        `;
+    const [rows] = await db.promise().query(sql, [id]);
+    return rows[0];
+  },
+
+  // Search (ADDED: JOIN)
+  search: async (searchTerm) => {
+    const sql = `
+            SELECT p.*, s.quantity 
+            FROM products p
+            LEFT JOIN stock s ON p.id = s.product_id
+            WHERE p.name LIKE ?
+            ORDER BY p.created_at DESC
+        `;
+    const [rows] = await db.promise().query(sql, [`%${searchTerm}%`]);
+    return rows;
+  },
+
+  // Update (No changes needed)
+  update: async (id, data) => {
+    const sql = `
+            UPDATE products SET 
+            name = ?, category = ?, price = ?, barcode = ?, 
+            description = ?, expiry_date = ?, supplier = ?, image_url = ?
+            WHERE id = ?
+        `;
+    const values = [
+      data.name,
+      data.category,
+      data.price,
+      data.barcode,
+      data.description,
+      data.expiry_date,
+      data.supplier,
+      data.image_url,
+      id,
+    ];
+    const [result] = await db.promise().query(sql, values);
+    return result;
+  },
+
+  // Delete (No changes needed)
+  delete: async (id) => {
     const sql = `DELETE FROM products WHERE id = ?`;
-    db.query(sql, [id], callback);
-};
+    const [result] = await db.promise().query(sql, [id]);
+    return result;
+  },
 
-// ========================
-// SEARCH BY NAME
-// ========================
-exports.searchProducts = (searchTerm, callback) => {
+  // Filter By Category
+  filterByCategory: async (category) => {
     const sql = `
-        SELECT * FROM products 
-        WHERE name LIKE ?
-        ORDER BY created_at DESC
+      SELECT p.*, s.quantity 
+      FROM products p
+      LEFT JOIN stock s ON p.id = s.product_id
+      WHERE p.category = ?
     `;
-    db.query(sql, [`%${searchTerm}%`], callback);
-};
+    const [rows] = await db.promise().query(sql, [category]);
+    return rows;
+  },
 
-// ========================
-// FILTER BY CATEGORY
-// ========================
-exports.filterByCategory = (category, callback) => {
-    const sql = `SELECT * FROM products WHERE category = ?`;
-    db.query(sql, [category], callback);
-};
-
-// ========================
-// FILTER BY PRICE RANGE
-// ========================
-exports.filterByPrice = (minPrice, maxPrice, callback) => {
+  // Filter By Price Range
+  filterByPrice: async (minPrice, maxPrice) => {
     const sql = `
-        SELECT * FROM products 
-        WHERE price BETWEEN ? AND ?
-        ORDER BY price ASC
+      SELECT p.*, s.quantity
+      FROM products p
+      LEFT JOIN stock s ON p.id = s.product_id
+      WHERE p.price BETWEEN ? AND ?
     `;
-    db.query(sql, [minPrice, maxPrice], callback);
+    const [rows] = await db.promise().query(sql, [minPrice, maxPrice]);
+    return rows;
+  },
 };
 
-// ========================
-// EXPIRY FILTER (Optional)
-// ========================
-exports.getExpiringSoon = (days, callback) => {
-    const sql = `
-        SELECT * FROM products 
-        WHERE expiry_date <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
-        ORDER BY expiry_date ASC
-    `;
-    db.query(sql, [days], callback);
-};
+module.exports = Product;
+
 
