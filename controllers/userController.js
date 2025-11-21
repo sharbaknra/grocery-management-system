@@ -18,13 +18,23 @@ const userController = {
         return res.status(400).json({ message: 'Email already registered.' });
       }
 
+      // Security: Ignore role from client, always set to 'customer' for public registration
+      // Role can only be changed by admin users via separate admin endpoints
       const hashedPassword = await bcrypt.hash(password, 10);
-      await User.create({ name, email, password: hashedPassword });
+      const role = 'customer'; // Force customer role on public registration
+      await User.create({ name, email, password: hashedPassword, role });
       
       res.status(201).json({ message: 'User registered successfully!' });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+      console.error('Registration error:', error);
+      // In development, show actual error for debugging
+      const errorMessage = process.env.NODE_ENV === 'development' 
+        ? error.message 
+        : 'Server error';
+      res.status(500).json({ 
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      });
     }
   },
 

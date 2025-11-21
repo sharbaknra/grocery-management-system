@@ -5,10 +5,11 @@ const bcrypt = require('bcrypt');
 const User = {
   // Create new user
   create: async (userData) => {
-    const { name, email, password } = userData;
-    const sql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
-    const [result] = await db.promise().query(sql, [name, email, password]);
-    return { id: result.insertId, name, email };
+    const { name, email, password, role = 'customer' } = userData;
+    // Default to 'customer' if role not provided (defensive default)
+    const sql = 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)';
+    const [result] = await db.promise().query(sql, [name, email, password, role]);
+    return { id: result.insertId, name, email, role };
   },
 
   // Find user by email

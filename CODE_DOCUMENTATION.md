@@ -9,21 +9,36 @@ grocery-management-system/
 ├── config/
 │   └── db.js
 ├── controllers/
+│   ├── cartController.js
+│   ├── checkoutController.js
 │   ├── itemController.js
+│   ├── orderHistoryController.js
 │   ├── productController.js
+│   ├── stockController.js
 │   └── userController.js
+├── database/
+│   ├── create-cart-table.sql
+│   ├── create-order-history-indexes.sql
+│   └── create-orders-tables.sql
 ├── middleware/
 │   ├── adminMiddleware.js
 │   ├── authMiddleware.js
+│   ├── roleMiddleware.js
 │   └── uploadMiddleware.js
 ├── models/
+│   ├── cartModel.js
 │   ├── itemModel.js
+│   ├── orderItemModel.js
+│   ├── orderModel.js
 │   ├── productModel.js
 │   ├── stockModel.js
 │   └── userModel.js
 ├── routes/
+│   ├── cartRoutes.js
 │   ├── itemRoutes.js
+│   ├── orderRoutes.js
 │   ├── productRoutes.js
+│   ├── stockRoutes.js
 │   └── userRoutes.js
 ├── utils/
 │   └── tokenBlacklist.js
@@ -47,6 +62,9 @@ const db = require('./config/db'); // MySQL connection
 const itemRoutes = require('./routes/itemRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
+const stockRoutes = require('./routes/stockRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const User = require('./models/userModel');
 
 const app = express();
@@ -60,6 +78,9 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/stock', stockRoutes);
+app.use('/api/orders/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // === ERROR HANDLING MIDDLEWARE ===
 app.use((err, req, res, next) => {
@@ -105,6 +126,10 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 ```
+
+**Key Updates (Module 2.9.5):**
+- Added `stockRoutes`, `cartRoutes`, and `orderRoutes` imports
+- Registered routes: `/api/stock`, `/api/orders/cart`, `/api/orders`
 
 ## Config
 
@@ -806,6 +831,28 @@ const verifyAdmin = (req, res, next) => {
 module.exports = verifyAdmin;
 ```
 
+### `middleware/roleMiddleware.js`
+**Description**: Middleware for role-based access control. Checks if the authenticated user's role is in the allowed roles list. Returns 403 Forbidden if the user's role is not in the allowed roles. Used for flexible role-based authorization (customer, admin, staff).
+
+**Code**:
+```javascript
+const allowRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized. No user data found." });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Access forbidden. Insufficient privileges." });
+    }
+
+    return next();
+  };
+};
+
+module.exports = allowRoles;
+```
+
 ### `middleware/uploadMiddleware.js`
 **Description**: Configures `multer` for handling file uploads. Sets the destination folder, filename format, file size limit (3MB), and file type filter (images only).
 
@@ -950,4 +997,439 @@ module.exports = router;
 const tokenBlacklist = [];
 
 module.exports = { tokenBlacklist };
+```
+
+---
+
+## Module 2.9.5: Order History
+
+### `models/orderModel.js`
+**Description**: Model for managing orders. Includes methods for creating orders, retrieving orders by ID or user ID, getting all orders (for admin), and updating order status. Enhanced for Module 2.9.5 to include complex JOIN operations with users table.
+
+**Code**:
+```javascript
+const db = require("../config/db");
+
+const Order = {
+  // Create a new order
+  create: async (orderData) => {
+    const { user_id, status, total_price, tax_applied, discount_applied } = orderData;
+    const sql = `
+            INSERT INTO orders (user_id, status, total_price, tax_applied, discount_applied)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+    const [result] = await db.promise().query(sql, [
+      user_id,
+      status || "Pending",
+      total_price || 0.00,
+      tax_applied || 0.00,
+      discount_applied || 0.00,
+    ]);
+    return result.insertId; // Returns order_id
+  },
+
+  // Get order by ID
+  getById: async (orderId) => {
+    const sql = `
+            SELECT o.*, u.name AS user_name, u.email AS user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            WHERE o.order_id = ?
+        `;
+    const [rows] = await db.promise().query(sql, [orderId]);
+    return rows[0];
+  },
+
+  // Get all orders (for Admin/Staff) - Module 2.9.5
+  getAll: async () => {
+    const sql = `
+            SELECT 
+                o.order_id,
+                o.user_id,
+                o.status,
+                o.total_price,
+                o.tax_applied,
+                o.discount_applied,
+                o.created_at,
+                o.updated_at,
+                u.name AS user_name,
+                u.email AS user_email
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            ORDER BY o.created_at DESC
+        `;
+    const [rows] = await db.promise().query(sql);
+    return rows;
+  },
+
+  // Get orders by user ID (for customers to see their own orders) - Module 2.9.5
+  getByUserId: async (userId) => {
+    const sql = `
+            SELECT 
+                o.order_id,
+                o.user_id,
+                o.status,
+                o.total_price,
+                o.tax_applied,
+                o.discount_applied,
+                o.created_at,
+                o.updated_at
+            FROM orders o
+            WHERE o.user_id = ?
+            ORDER BY o.created_at DESC
+        `;
+    const [rows] = await db.promise().query(sql, [userId]);
+    return rows;
+  },
+
+  // Update order status
+  updateStatus: async (orderId, status) => {
+    const sql = `
+            UPDATE orders
+            SET status = ?, updated_at = NOW()
+            WHERE order_id = ?
+        `;
+    const [result] = await db.promise().query(sql, [status, orderId]);
+    return result;
+  },
+
+  // Update order (for checkout - update total_price, tax, discount)
+  update: async (orderId, orderData) => {
+    const { total_price, tax_applied, discount_applied, status } = orderData;
+    const sql = `
+            UPDATE orders
+            SET total_price = ?,
+                tax_applied = ?,
+                discount_applied = ?,
+                status = ?,
+                updated_at = NOW()
+            WHERE order_id = ?
+        `;
+    const [result] = await db.promise().query(sql, [
+      total_price,
+      tax_applied,
+      discount_applied,
+      status,
+      orderId,
+    ]);
+    return result;
+  },
+};
+
+module.exports = Order;
+```
+
+### `models/orderItemModel.js`
+**Description**: Model for managing order items. Includes methods for creating order items (single and multiple), retrieving items by order ID (with product JOIN), and deleting items. Critical for maintaining unit_price_at_sale for audit trails.
+
+**Code**:
+```javascript
+const db = require("../config/db");
+
+const OrderItem = {
+  // Create order item (used when adding items to order)
+  create: async (itemData) => {
+    const { order_id, product_id, quantity, unit_price_at_sale } = itemData;
+    const sql = `
+            INSERT INTO order_items (order_id, product_id, quantity, unit_price_at_sale)
+            VALUES (?, ?, ?, ?)
+        `;
+    const [result] = await db.promise().query(sql, [
+      order_id,
+      product_id,
+      quantity,
+      unit_price_at_sale,
+    ]);
+    return result.insertId; // Returns order_item_id
+  },
+
+  // Create multiple order items in a single transaction
+  createMultiple: async (items, connection = null) => {
+    const sql = `
+            INSERT INTO order_items (order_id, product_id, quantity, unit_price_at_sale)
+            VALUES ?
+        `;
+    const values = items.map((item) => [
+      item.order_id,
+      item.product_id,
+      item.quantity,
+      item.unit_price_at_sale,
+    ]);
+
+    // Use provided connection for transaction, or create new query
+    if (connection) {
+      const [result] = await connection.query(sql, [values]);
+      return result;
+    } else {
+      const [result] = await db.promise().query(sql, [values]);
+      return result;
+    }
+  },
+
+  // Get order items by order_id (with product JOIN)
+  getByOrderId: async (orderId) => {
+    const sql = `
+            SELECT 
+                oi.*,
+                p.name AS product_name,
+                p.image_url AS product_image,
+                p.category AS product_category
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?
+            ORDER BY oi.order_item_id ASC
+        `;
+    const [rows] = await db.promise().query(sql, [orderId]);
+    return rows;
+  },
+
+  // Get order item by ID
+  getById: async (orderItemId) => {
+    const sql = `SELECT * FROM order_items WHERE order_item_id = ?`;
+    const [rows] = await db.promise().query(sql, [orderItemId]);
+    return rows[0];
+  },
+
+  // Delete order item (for cart management)
+  delete: async (orderItemId) => {
+    const sql = `DELETE FROM order_items WHERE order_item_id = ?`;
+    const [result] = await db.promise().query(sql, [orderItemId]);
+    return result;
+  },
+
+  // Delete all items for an order (used when order is cancelled)
+  deleteByOrderId: async (orderId) => {
+    const sql = `DELETE FROM order_items WHERE order_id = ?`;
+    const [result] = await db.promise().query(sql, [orderId]);
+    return result;
+  },
+};
+
+module.exports = OrderItem;
+```
+
+### `controllers/orderHistoryController.js`
+**Description**: Controller for order history operations. Implements three endpoints: (1) GET /api/orders - Get all orders (Admin/Staff only), (2) GET /api/orders/me - Get customer's own orders, (3) GET /api/orders/:orderId - Get single order by ID. Uses complex JOIN operations across orders, users, and order_items tables for comprehensive data aggregation. Includes unit_price_at_sale for audit trails.
+
+**Code**:
+```javascript
+const Order = require("../models/orderModel");
+const OrderItem = require("../models/orderItemModel");
+
+const orderHistoryController = {
+  // GET /api/orders (Admin/Staff only) - Get all orders
+  getAllOrders: async (req, res) => {
+    // Additional authorization check (defense in depth)
+    // The middleware should block customers, but this adds an extra check
+    const userRole = req.user?.role;
+    
+    if (userRole !== "admin" && userRole !== "staff") {
+      return res.status(403).json({
+        success: false,
+        message: "Access forbidden. Insufficient privileges. Only Admin and Staff can view all orders.",
+      });
+    }
+    
+    try {
+      // Get all orders with user information
+      const orders = await Order.getAll();
+
+      // Fetch order items for each order
+      const ordersWithItems = await Promise.all(
+        orders.map(async (order) => {
+          const items = await OrderItem.getByOrderId(order.order_id);
+          return {
+            ...order,
+            items: items.map((item) => ({
+              order_item_id: item.order_item_id,
+              product_id: item.product_id,
+              product_name: item.product_name,
+              product_image: item.product_image,
+              product_category: item.product_category,
+              quantity: item.quantity,
+              unit_price_at_sale: parseFloat(item.unit_price_at_sale), // Critical: price at time of sale
+              item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
+            })),
+            item_count: items.length,
+          };
+        })
+      );
+
+      res.status(200).json({
+        success: true,
+        data: {
+          orders: ordersWithItems,
+          total_orders: ordersWithItems.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching all orders:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error while fetching orders.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      });
+    }
+  },
+
+  // GET /api/orders/me (Customer access only) - Get customer's own orders
+  getMyOrders: async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      // Get user's orders
+      const orders = await Order.getByUserId(userId);
+
+      // Fetch order items for each order
+      const ordersWithItems = await Promise.all(
+        orders.map(async (order) => {
+          const items = await OrderItem.getByOrderId(order.order_id);
+          return {
+            ...order,
+            items: items.map((item) => ({
+              order_item_id: item.order_item_id,
+              product_id: item.product_id,
+              product_name: item.product_name,
+              product_image: item.product_image,
+              product_category: item.product_category,
+              quantity: item.quantity,
+              unit_price_at_sale: parseFloat(item.unit_price_at_sale), // Critical: price at time of sale
+              item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
+            })),
+            item_count: items.length,
+          };
+        })
+      );
+
+      res.status(200).json({
+        success: true,
+        data: {
+          orders: ordersWithItems,
+          total_orders: ordersWithItems.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error while fetching your orders.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      });
+    }
+  },
+
+  // GET /api/orders/:orderId - Get single order by ID
+  getOrderById: async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      const userId = req.user.id;
+      const userRole = req.user.role;
+
+      // Get order
+      const order = await Order.getById(parseInt(orderId));
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found.",
+        });
+      }
+
+      // Check authorization: Admin/Staff can see any order, Customers can only see their own
+      if (userRole !== "admin" && userRole !== "staff" && order.user_id !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "Access forbidden. You can only view your own orders.",
+        });
+      }
+
+      // Get order items
+      const items = await OrderItem.getByOrderId(parseInt(orderId));
+
+      const orderWithItems = {
+        ...order,
+        items: items.map((item) => ({
+          order_item_id: item.order_item_id,
+          product_id: item.product_id,
+          product_name: item.product_name,
+          product_image: item.product_image,
+          product_category: item.product_category,
+          quantity: item.quantity,
+          unit_price_at_sale: parseFloat(item.unit_price_at_sale),
+          item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
+        })),
+        item_count: items.length,
+      };
+
+      res.status(200).json({
+        success: true,
+        data: {
+          order: orderWithItems,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error while fetching order.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      });
+    }
+  },
+};
+
+module.exports = orderHistoryController;
+```
+
+### `routes/orderRoutes.js`
+**Description**: Routes for order operations. Includes checkout endpoint (Module 2.9.4) and order history endpoints (Module 2.9.5). Routes are protected with verifyToken middleware and role-based access control using allowRoles middleware. Route order is critical: GET / must come before GET /:orderId to ensure correct matching.
+
+**Code**:
+```javascript
+const express = require("express");
+const router = express.Router();
+
+const checkoutController = require("../controllers/checkoutController");
+const orderHistoryController = require("../controllers/orderHistoryController");
+const verifyToken = require("../middleware/authMiddleware");
+const allowRoles = require("../middleware/roleMiddleware");
+
+// POST /api/orders/checkout - Checkout cart (Module 2.9.4)
+router.post("/checkout", verifyToken, allowRoles("customer", "admin", "staff"), checkoutController.checkout);
+
+// GET /api/orders - Get all orders (Admin/Staff only) (Module 2.9.5)
+// IMPORTANT: Root route must come FIRST before any other GET routes to match correctly
+router.get("/", verifyToken, allowRoles("admin", "staff"), orderHistoryController.getAllOrders);
+
+// GET /api/orders/me - Get customer's own orders (Module 2.9.5)
+// IMPORTANT: More specific routes must come before parameterized routes
+router.get("/me", verifyToken, allowRoles("customer", "admin", "staff"), orderHistoryController.getMyOrders);
+
+// GET /api/orders/:orderId - Get single order by ID
+// IMPORTANT: Parameterized route must come LAST
+router.get("/:orderId", verifyToken, allowRoles("customer", "admin", "staff"), orderHistoryController.getOrderById);
+
+module.exports = router;
+```
+
+### `middleware/roleMiddleware.js`
+**Description**: Middleware for role-based access control. Checks if the authenticated user's role is in the allowed roles list. Returns 403 Forbidden if the user's role is not in the allowed roles.
+
+**Code**:
+```javascript
+const allowRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized. No user data found." });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Access forbidden. Insufficient privileges." });
+    }
+
+    return next();
+  };
+};
+
+module.exports = allowRoles;
 ```
