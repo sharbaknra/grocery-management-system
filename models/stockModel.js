@@ -15,14 +15,26 @@ const Stock = {
     return rows[0];
   },
 
-  // (This is the logic for 2.8.2, included here for file completion)
-  updateQuantity: async (productId, newQuantity) => {
+  // Atomic increment used by /restock
+  restock: async (productId, quantity) => {
     const sql = `
-            UPDATE stock 
-            SET quantity = ?, last_restock_date = NOW() 
+            UPDATE stock
+            SET quantity = quantity + ?, last_restock_date = NOW()
             WHERE product_id = ?
         `;
-    const [result] = await db.promise().query(sql, [newQuantity, productId]);
+    const [result] = await db.promise().query(sql, [quantity, productId]);
+    return result;
+  },
+
+  // Atomic decrement used by /reduce (never drops below zero)
+  reduce: async (productId, quantity) => {
+    const sql = `
+            UPDATE stock
+            SET quantity = quantity - ?
+            WHERE product_id = ?
+              AND quantity >= ?
+        `;
+    const [result] = await db.promise().query(sql, [quantity, productId, quantity]);
     return result;
   },
 
@@ -47,5 +59,6 @@ const Stock = {
 };
 
 module.exports = Stock;
+
 
 

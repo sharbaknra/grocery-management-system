@@ -1,4 +1,5 @@
 # .gitignore (append)
 node_modules
 .env
-CODE_DOCUMENTATION.md
+modules.md
+logging-instructions.md
