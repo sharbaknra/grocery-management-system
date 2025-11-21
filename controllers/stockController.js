@@ -40,6 +40,14 @@ const stockController = {
           .json({ success: false, message: "Unable to restock inventory. Please try again." });
       }
 
+      // Log stock movement (Module 2.8.7)
+      try {
+        await Stock.logMovement(productId, req.user.id, quantity, "Restock");
+      } catch (logError) {
+        console.error("Error logging stock movement:", logError);
+        // Don't fail the request if logging fails, but log the error
+      }
+
       const updatedStock = await Stock.getByProductId(productId);
 
       return res.status(200).json({
@@ -89,6 +97,15 @@ const stockController = {
         });
       }
 
+      // Log stock movement (Module 2.8.7)
+      // Note: change_amount is negative for reduce operations
+      try {
+        await Stock.logMovement(productId, req.user.id, -quantity, "Reduce");
+      } catch (logError) {
+        console.error("Error logging stock movement:", logError);
+        // Don't fail the request if logging fails, but log the error
+      }
+
       const updatedStock = await Stock.getByProductId(productId);
 
       return res.status(200).json({
@@ -103,6 +120,48 @@ const stockController = {
       });
     } catch (error) {
       console.error("Error during stock reduction:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  },
+
+  // Get low stock alerts (Module 2.8.3)
+  getLowStock: async (req, res) => {
+    try {
+      const lowStockItems = await Stock.getLowStock();
+
+      return res.status(200).json({
+        success: true,
+        message: "Low stock items retrieved successfully.",
+        data: {
+          items: lowStockItems,
+          count: lowStockItems.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error retrieving low stock items:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  },
+
+  // Get stock movement history (Module 2.8.7)
+  getMovementHistory: async (req, res) => {
+    try {
+      const productId = req.query.productId ? parseInt(req.query.productId) : null;
+      const limit = req.query.limit ? parseInt(req.query.limit) : 100;
+
+      // Only Admin and Staff can view movement history
+      const history = await Stock.getMovementHistory(productId, limit);
+
+      return res.status(200).json({
+        success: true,
+        message: "Stock movement history retrieved successfully.",
+        data: {
+          movements: history,
+          count: history.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error retrieving stock movement history:", error);
       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
   },

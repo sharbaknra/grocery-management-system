@@ -38,13 +38,17 @@ const Stock = {
     return result;
   },
 
-  // (This is the logic for 2.8.3, included here for file completion)
+  // Get low stock items (Module 2.8.3)
+  // Returns products where quantity <= min_stock_level AND min_stock_level > 0
+  // (min_stock_level = 0 means no alert, so we exclude those)
   getLowStock: async () => {
     const sql = `
-            SELECT p.name, s.quantity, s.min_stock_level 
+            SELECT p.id, p.name, s.quantity, s.min_stock_level 
             FROM products p
             JOIN stock s ON p.id = s.product_id
             WHERE s.quantity <= s.min_stock_level
+              AND s.min_stock_level > 0
+            ORDER BY s.quantity ASC
         `;
     const [rows] = await db.promise().query(sql);
     return rows;
@@ -55,6 +59,47 @@ const Stock = {
     const sql = `DELETE FROM stock WHERE product_id = ?`;
     const [result] = await db.promise().query(sql, [productId]);
     return result;
+  },
+
+  // Log stock movement (Module 2.8.7)
+  // Records all inventory changes for auditing and compliance
+  logMovement: async (productId, userId, changeAmount, reason) => {
+    const sql = `
+            INSERT INTO stock_movements (product_id, user_id, change_amount, reason)
+            VALUES (?, ?, ?, ?)
+        `;
+    const [result] = await db.promise().query(sql, [productId, userId, changeAmount, reason]);
+    return result;
+  },
+
+  // Get stock movement history (Optional - for viewing logs)
+  getMovementHistory: async (productId = null, limit = 100) => {
+    let sql = `
+            SELECT 
+                sm.movement_id,
+                sm.product_id,
+                p.name AS product_name,
+                sm.user_id,
+                u.name AS user_name,
+                sm.change_amount,
+                sm.reason,
+                sm.timestamp
+            FROM stock_movements sm
+            JOIN products p ON sm.product_id = p.id
+            JOIN users u ON sm.user_id = u.id
+        `;
+    
+    const params = [];
+    if (productId) {
+      sql += ` WHERE sm.product_id = ?`;
+      params.push(productId);
+    }
+    
+    sql += ` ORDER BY sm.timestamp DESC LIMIT ?`;
+    params.push(limit);
+    
+    const [rows] = await db.promise().query(sql, params);
+    return rows;
   },
 };
 
