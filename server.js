@@ -11,6 +11,7 @@ const productRoutes = require('./routes/productRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const reportsRoutes = require('./routes/reportsRoutes');
 const User = require('./models/userModel');
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/orders/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // === ERROR HANDLING MIDDLEWARE ===
 app.use((err, req, res, next) => {
