@@ -1,5 +1,70 @@
-# .gitignore (append)
-node_modules
+# Dependencies
+node_modules/
+# Note: package-lock.json should be committed for consistency
+
+# Environment variables
 .env
+.env.local
+.env.*.local
+
+# Uploaded files (user-generated product images)
+# The uploads/ directory should exist but its contents should not be committed
+uploads/*
+!uploads/.gitkeep
+
+# Build and distribution files
+*.zip
+*.tar
+*.tar.gz
+dist/
+build/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files and directories
+test-zip-extract/
+test-extract-verification/
+test-*-extract*/
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test files (temporary module tests)
+test-module-*.js
+
+# Project-specific (as per original)
 modules.md
 logging-instructions.md
+
+# Keep these (commented for reference)
+# .env.example - Should be committed
+# README.md - Should be committed
+# package.json - Should be committed
+# start.bat - Should be committed
+# reset-db.bat - Should be committed
