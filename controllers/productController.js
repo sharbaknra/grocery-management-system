@@ -5,6 +5,28 @@ const productController = {
   // CREATE PRODUCT + INITIALIZE STOCK (Updated for 2.8.1)
   createProduct: async (req, res) => {
     try {
+      // Input validation - reject negative prices
+      if (req.body.price !== undefined) {
+        const price = parseFloat(req.body.price);
+        if (isNaN(price) || price < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Price must be a non-negative number"
+          });
+        }
+      }
+
+      // Input validation - reject negative quantities
+      if (req.body.quantity !== undefined) {
+        const quantity = parseInt(req.body.quantity);
+        if (isNaN(quantity) || quantity < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Quantity must be a non-negative integer"
+          });
+        }
+      }
+
       const imageUrl = req.file ? req.file.filename : null;
       // Separate quantity from product details
       const { quantity, ...productData } = req.body;
@@ -100,6 +122,17 @@ const productController = {
       const id = req.params.id;
       const existing = await Product.getById(id);
       if (!existing) return res.status(404).json({ message: "Product not found" });
+
+      // Input validation - reject negative prices
+      if (req.body.price !== undefined) {
+        const price = parseFloat(req.body.price);
+        if (isNaN(price) || price < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Price must be a non-negative number"
+          });
+        }
+      }
 
       const incoming = req.body;
       const mergedData = {
