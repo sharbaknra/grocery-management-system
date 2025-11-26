@@ -194,9 +194,16 @@ const Reports = {
         p.image_url,
         s.quantity,
         s.min_stock_level,
-        (s.min_stock_level - s.quantity) AS shortage
+        (s.min_stock_level - s.quantity) AS shortage,
+        sup.id AS supplier_id,
+        sup.name AS supplier_name,
+        sup.contact_name AS supplier_contact_name,
+        sup.phone AS supplier_phone,
+        sup.email AS supplier_email,
+        sup.lead_time_days
       FROM products p
       INNER JOIN stock s ON p.id = s.product_id
+      LEFT JOIN suppliers sup ON p.supplier_id = sup.id
       WHERE s.quantity <= s.min_stock_level
         AND s.min_stock_level > 0
       ORDER BY s.quantity ASC, shortage DESC
@@ -211,6 +218,12 @@ const Reports = {
       quantity: parseInt(row.quantity) || 0,
       min_stock_level: parseInt(row.min_stock_level) || 0,
       shortage: parseInt(row.shortage) || 0,
+      supplier_id: row.supplier_id,
+      supplier_name: row.supplier_name,
+      supplier_contact_name: row.supplier_contact_name,
+      supplier_phone: row.supplier_phone,
+      supplier_email: row.supplier_email,
+      supplier_lead_time_days: row.lead_time_days,
     }));
   },
 
@@ -227,9 +240,12 @@ const Reports = {
         p.price,
         p.image_url,
         s.quantity,
-        s.min_stock_level
+        s.min_stock_level,
+        sup.id AS supplier_id,
+        sup.name AS supplier_name
       FROM products p
       INNER JOIN stock s ON p.id = s.product_id
+      LEFT JOIN suppliers sup ON p.supplier_id = sup.id
       WHERE s.quantity = 0
       ORDER BY p.name ASC
     `;
@@ -242,6 +258,8 @@ const Reports = {
       image_url: row.image_url,
       quantity: parseInt(row.quantity) || 0,
       min_stock_level: parseInt(row.min_stock_level) || 0,
+      supplier_id: row.supplier_id,
+      supplier_name: row.supplier_name,
     }));
   },
 

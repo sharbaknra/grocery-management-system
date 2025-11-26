@@ -25,6 +25,23 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Suppliers table (Module 2.8.4)
+CREATE TABLE IF NOT EXISTS suppliers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255),
+    phone VARCHAR(50),
+    email VARCHAR(255),
+    address VARCHAR(500),
+    lead_time_days INT NOT NULL DEFAULT 7 COMMENT 'Average days needed to fulfill a purchase order',
+    min_order_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_supplier_name (name),
+    INDEX idx_supplier_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Products table (Module 2.7)
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,13 +51,15 @@ CREATE TABLE IF NOT EXISTS products (
     barcode VARCHAR(100) UNIQUE,
     description TEXT,
     expiry_date DATE,
-    supplier VARCHAR(255),
+    supplier_id INT NULL,
     image_url VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL,
     INDEX idx_category (category),
     INDEX idx_barcode (barcode),
-    INDEX idx_name (name)
+    INDEX idx_name (name),
+    INDEX idx_supplier_id (supplier_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Stock table (Module 2.8)
@@ -138,18 +157,27 @@ INSERT INTO users (name, email, password, role) VALUES
 ('Staff Member', 'staff@grocery.com', '$2b$10$LZCZzicsx7dvKL9woTTfyO5U.RjCzWvdVBmvd3bNWDcWbhWfV5z4W', 'staff')
 ON DUPLICATE KEY UPDATE email=email;
 
+-- Sample suppliers
+INSERT INTO suppliers (name, contact_name, phone, email, address, lead_time_days, min_order_amount, notes) VALUES
+('Dairy Farm Co.', 'Sarah Khan', '+92 300 1234567', 'sarah@dairyfarm.example', '45 Milk Street, Lahore', 5, 5000.00, 'Delivers every Monday'),
+('Bakery Fresh', 'Ali Raza', '+92 301 9876543', 'orders@bakeryfresh.example', '12 Bread Lane, Islamabad', 3, 2500.00, 'Prefers orders in multiples of 50 loaves'),
+('Tropical Fruits Inc.', 'Maria Gomez', '+92 302 5551212', 'maria@tropicalfruits.example', '78 Orchard Road, Karachi', 4, 4000.00, 'Ships in insulated crates'),
+('Garden Fresh', 'Ahmed Nawaz', '+92 321 3332221', 'sales@gardenfresh.example', '5 Green Block, Faisalabad', 2, 1500.00, 'Same-day dispatch if ordered before noon'),
+('National Provisions', 'Bilal Aslam', '+92 333 1118899', 'bilal@nationalprov.example', '90 Supply Park, Multan', 7, 8000.00, 'Handles pantry staples and beverages')
+ON DUPLICATE KEY UPDATE name = name;
+
 -- Sample products with various categories
-INSERT INTO products (name, category, price, barcode, description, expiry_date, supplier, image_url) VALUES
-('Fresh Milk', 'Dairy', 3.99, '1234567890123', 'Fresh whole milk, 1 liter', DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'Dairy Farm Co.', NULL),
-('White Bread', 'Bakery', 2.49, '1234567890124', 'Fresh white bread loaf', DATE_ADD(CURDATE(), INTERVAL 3 DAY), 'Bakery Fresh', NULL),
-('Organic Eggs', 'Dairy', 4.99, '1234567890125', 'Free-range organic eggs, 12 count', DATE_ADD(CURDATE(), INTERVAL 14 DAY), 'Farm Fresh Eggs', NULL),
-('Bananas', 'Fruits', 1.99, '1234567890126', 'Fresh yellow bananas, per pound', DATE_ADD(CURDATE(), INTERVAL 5 DAY), 'Tropical Fruits Inc.', NULL),
-('Tomatoes', 'Vegetables', 2.99, '1234567890127', 'Fresh red tomatoes, per pound', DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'Garden Fresh', NULL),
-('Chicken Breast', 'Meat', 8.99, '1234567890128', 'Fresh chicken breast, per pound', DATE_ADD(CURDATE(), INTERVAL 2 DAY), 'Meat Market', NULL),
-('Orange Juice', 'Beverages', 3.49, '1234567890129', '100% pure orange juice, 1 liter', DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'Juice Co.', NULL),
-('Rice', 'Grains', 5.99, '1234567890130', 'Long grain white rice, 2kg bag', NULL, 'Grain Suppliers', NULL),
-('Pasta', 'Grains', 2.99, '1234567890131', 'Spaghetti pasta, 500g', NULL, 'Pasta Co.', NULL),
-('Cooking Oil', 'Condiments', 4.49, '1234567890132', 'Vegetable cooking oil, 1 liter', DATE_ADD(CURDATE(), INTERVAL 365 DAY), 'Oil Producers', NULL)
+INSERT INTO products (name, category, price, barcode, description, expiry_date, supplier_id, image_url) VALUES
+('Fresh Milk', 'Dairy', 3.99, '1234567890123', 'Fresh whole milk, 1 liter', DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, NULL),
+('White Bread', 'Bakery', 2.49, '1234567890124', 'Fresh white bread loaf', DATE_ADD(CURDATE(), INTERVAL 3 DAY), 2, NULL),
+('Organic Eggs', 'Dairy', 4.99, '1234567890125', 'Free-range organic eggs, 12 count', DATE_ADD(CURDATE(), INTERVAL 14 DAY), 1, NULL),
+('Bananas', 'Fruits', 1.99, '1234567890126', 'Fresh yellow bananas, per pound', DATE_ADD(CURDATE(), INTERVAL 5 DAY), 3, NULL),
+('Tomatoes', 'Vegetables', 2.99, '1234567890127', 'Fresh red tomatoes, per pound', DATE_ADD(CURDATE(), INTERVAL 7 DAY), 4, NULL),
+('Chicken Breast', 'Meat', 8.99, '1234567890128', 'Fresh chicken breast, per pound', DATE_ADD(CURDATE(), INTERVAL 2 DAY), 5, NULL),
+('Orange Juice', 'Beverages', 3.49, '1234567890129', '100% pure orange juice, 1 liter', DATE_ADD(CURDATE(), INTERVAL 30 DAY), 5, NULL),
+('Rice', 'Grains', 5.99, '1234567890130', 'Long grain white rice, 2kg bag', NULL, 5, NULL),
+('Pasta', 'Grains', 2.99, '1234567890131', 'Spaghetti pasta, 500g', NULL, 5, NULL),
+('Cooking Oil', 'Condiments', 4.49, '1234567890132', 'Vegetable cooking oil, 1 liter', DATE_ADD(CURDATE(), INTERVAL 365 DAY), 5, NULL)
 ON DUPLICATE KEY UPDATE name=name;
 
 -- Stock entries for products

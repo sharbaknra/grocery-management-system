@@ -1,5 +1,6 @@
 const Product = require("../models/productModel");
 const Stock = require("../models/stockModel"); // <<< Import the new Stock Model
+const Supplier = require("../models/supplierModel");
 
 const productController = {
   // CREATE PRODUCT + INITIALIZE STOCK (Updated for 2.8.1)
@@ -29,10 +30,28 @@ const productController = {
 
       const imageUrl = req.file ? req.file.filename : null;
       // Separate quantity from product details
-      const { quantity, ...productData } = req.body;
+      const { quantity, supplierId, ...productData } = req.body;
       const initialStock = quantity || 0;
 
-      const data = { ...productData, image_url: imageUrl };
+      let supplierRecord = null;
+      if (supplierId) {
+        const parsedSupplierId = parseInt(supplierId, 10);
+        if (isNaN(parsedSupplierId) || parsedSupplierId <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: "supplierId must be a positive integer",
+          });
+        }
+        supplierRecord = await Supplier.getById(parsedSupplierId);
+        if (!supplierRecord) {
+          return res.status(404).json({
+            success: false,
+            message: "Supplier not found.",
+          });
+        }
+      }
+
+      const data = { ...productData, supplier_id: supplierRecord ? supplierRecord.id : null, image_url: imageUrl };
 
       // 1. Create Product (only details)
       const productId = await Product.create(data);
@@ -135,6 +154,26 @@ const productController = {
       }
 
       const incoming = req.body;
+
+      let supplierId = existing.supplier_id;
+      if (incoming.supplierId !== undefined) {
+        const parsedSupplierId = parseInt(incoming.supplierId, 10);
+        if (isNaN(parsedSupplierId) || parsedSupplierId <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: "supplierId must be a positive integer",
+          });
+        }
+        const supplierRecord = await Supplier.getById(parsedSupplierId);
+        if (!supplierRecord) {
+          return res.status(404).json({
+            success: false,
+            message: "Supplier not found.",
+          });
+        }
+        supplierId = supplierRecord.id;
+      }
+
       const mergedData = {
         name: incoming.name ?? existing.name,
         category: incoming.category ?? existing.category,
@@ -142,7 +181,7 @@ const productController = {
         barcode: incoming.barcode ?? existing.barcode,
         description: incoming.description ?? existing.description,
         expiry_date: incoming.expiry_date ?? existing.expiry_date,
-        supplier: incoming.supplier ?? existing.supplier,
+        supplier_id: supplierId,
         image_url: req.file ? req.file.filename : incoming.image_url ?? existing.image_url,
       };
 

@@ -234,18 +234,45 @@ module.exports = User;
 ```
 
 ### `models/productModel.js`
-**Description**: Handles database operations for products. It joins with the `stock` table to retrieve quantity information. Supports CRUD operations, searching, and filtering.
+**Description**: Handles database operations for products. Every read joins `stock` plus the new `suppliers` table so responses include supplier metadata (`supplier_id`, `supplier_name`, etc.). All writes accept `supplier_id` to keep the catalog normalized.
 
 **Code**:
 ```javascript
 const db = require("../config/db");
 
+const mapProductRow = (row) => {
+  if (!row) return null;
+  return {
+    ...row,
+    supplier_id: row.supplier_id || null,
+    supplier_name: row.supplier_name || null,
+    supplier_contact_name: row.supplier_contact_name || null,
+    supplier_phone: row.supplier_phone || null,
+    supplier_email: row.supplier_email || null,
+    supplier: row.supplier_name || null, // backwards compatibility for legacy clients
+  };
+};
+
+const baseSelect = `
+  SELECT 
+    p.*,
+    s.quantity,
+    s.min_stock_level,
+    sup.id AS supplier_id,
+    sup.name AS supplier_name,
+    sup.contact_name AS supplier_contact_name,
+    sup.phone AS supplier_phone,
+    sup.email AS supplier_email
+  FROM products p
+  LEFT JOIN stock s ON p.id = s.product_id
+  LEFT JOIN suppliers sup ON p.supplier_id = sup.id
+`;
+
 const Product = {
-  // Create Product (Quantity column removed from SQL query)
   create: async (data) => {
     const sql = `
             INSERT INTO products 
-            (name, category, price, barcode, description, expiry_date, supplier, image_url)
+            (name, category, price, barcode, description, expiry_date, supplier_id, image_url)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
     const values = [
@@ -255,56 +282,36 @@ const Product = {
       data.barcode,
       data.description,
       data.expiry_date,
-      data.supplier,
+      data.supplier_id || null,
       data.image_url,
     ];
     const [result] = await db.promise().query(sql, values);
     return result.insertId;
   },
 
-  // Get All (ADDED: JOIN stock s ON p.id = s.product_id)
   getAll: async () => {
-    const sql = `
-            SELECT p.*, s.quantity, s.min_stock_level 
-            FROM products p
-            LEFT JOIN stock s ON p.id = s.product_id
-            ORDER BY p.created_at DESC
-        `;
+    const sql = `${baseSelect} ORDER BY p.created_at DESC`;
     const [rows] = await db.promise().query(sql);
-    return rows;
+    return rows.map(mapProductRow);
   },
 
-  // Get By ID (ADDED: JOIN)
   getById: async (id) => {
-    const sql = `
-            SELECT p.*, s.quantity, s.min_stock_level 
-            FROM products p
-            LEFT JOIN stock s ON p.id = s.product_id
-            WHERE p.id = ?
-        `;
+    const sql = `${baseSelect} WHERE p.id = ?`;
     const [rows] = await db.promise().query(sql, [id]);
-    return rows[0];
+    return mapProductRow(rows[0]);
   },
 
-  // Search (ADDED: JOIN)
   search: async (searchTerm) => {
-    const sql = `
-            SELECT p.*, s.quantity 
-            FROM products p
-            LEFT JOIN stock s ON p.id = s.product_id
-            WHERE p.name LIKE ?
-            ORDER BY p.created_at DESC
-        `;
+    const sql = `${baseSelect} WHERE p.name LIKE ? ORDER BY p.created_at DESC`;
     const [rows] = await db.promise().query(sql, [`%${searchTerm}%`]);
-    return rows;
+    return rows.map(mapProductRow);
   },
 
-  // Update (No changes needed)
   update: async (id, data) => {
     const sql = `
             UPDATE products SET 
             name = ?, category = ?, price = ?, barcode = ?, 
-            description = ?, expiry_date = ?, supplier = ?, image_url = ?
+            description = ?, expiry_date = ?, supplier_id = ?, image_url = ?
             WHERE id = ?
         `;
     const values = [
@@ -314,7 +321,7 @@ const Product = {
       data.barcode,
       data.description,
       data.expiry_date,
-      data.supplier,
+      data.supplier_id || null,
       data.image_url,
       id,
     ];
@@ -322,39 +329,123 @@ const Product = {
     return result;
   },
 
-  // Delete (No changes needed)
   delete: async (id) => {
     const sql = `DELETE FROM products WHERE id = ?`;
     const [result] = await db.promise().query(sql, [id]);
     return result;
   },
 
-  // Filter By Category
   filterByCategory: async (category) => {
-    const sql = `
-      SELECT p.*, s.quantity 
-      FROM products p
-      LEFT JOIN stock s ON p.id = s.product_id
-      WHERE p.category = ?
-    `;
+    const sql = `${baseSelect} WHERE p.category = ?`;
     const [rows] = await db.promise().query(sql, [category]);
-    return rows;
+    return rows.map(mapProductRow);
   },
 
-  // Filter By Price Range
   filterByPrice: async (minPrice, maxPrice) => {
-    const sql = `
-      SELECT p.*, s.quantity
-      FROM products p
-      LEFT JOIN stock s ON p.id = s.product_id
-      WHERE p.price BETWEEN ? AND ?
-    `;
+    const sql = `${baseSelect} WHERE p.price BETWEEN ? AND ?`;
     const [rows] = await db.promise().query(sql, [minPrice, maxPrice]);
-    return rows;
+    return rows.map(mapProductRow);
   },
 };
 
 module.exports = Product;
+```
+
+### `models/supplierModel.js`
+**Description**: Provides CRUD plus analytical helpers for Module 2.8.4. Supplies supplier summaries, associated products, order history, and calculated reorder sheets grouped by supplier.
+
+```javascript
+const db = require("../config/db");
+
+const Supplier = {
+  create: async (data) => {
+    const sql = `
+      INSERT INTO suppliers
+      (name, contact_name, phone, email, address, lead_time_days, min_order_amount, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+      data.name,
+      data.contact_name || null,
+      data.phone || null,
+      data.email || null,
+      data.address || null,
+      data.lead_time_days ?? 7,
+      data.min_order_amount ?? 0,
+      data.notes || null,
+    ];
+    const [result] = await db.promise().query(sql, values);
+    return result.insertId;
+  },
+  // ... update, delete, getAllWithStats, getById omitted for brevity ...
+  getReorderList: async (supplierId = null) => {
+    const params = [];
+    const supplierFilter = supplierId ? "AND sup.id = ?" : "";
+    if (supplierId) {
+      params.push(supplierId);
+    }
+
+    const sql = `
+      SELECT
+        sup.id AS supplier_id,
+        sup.name AS supplier_name,
+        p.id AS product_id,
+        p.name AS product_name,
+        s.quantity,
+        s.min_stock_level,
+        (s.min_stock_level - s.quantity) AS shortage,
+        GREATEST((s.min_stock_level * 2) - s.quantity, s.min_stock_level - s.quantity, 0) AS suggested_order_quantity
+      FROM suppliers sup
+      INNER JOIN products p ON p.supplier_id = sup.id
+      INNER JOIN stock s ON s.product_id = p.id
+      WHERE s.min_stock_level > 0
+        AND s.quantity <= s.min_stock_level
+        ${supplierFilter}
+      ORDER BY sup.name ASC, shortage DESC
+    `;
+    const [rows] = await db.promise().query(sql, params);
+    return rows;
+  },
+};
+
+module.exports = Supplier;
+```
+
+### `controllers/supplierController.js`
+**Description**: REST controller for Module 2.8.4. Handles supplier CRUD plus read-only purchasing experiences (detail, reorder dashboard, supplier reorder sheet). Staff and Admin can view; Admin retains write capability.
+
+```javascript
+const Supplier = require("../models/supplierModel");
+
+const supplierController = {
+  createSupplier: async (req, res) => { /* validate + create */ },
+  getSuppliers: async (_req, res) => { /* summary list */ },
+  getSupplierById: async (req, res) => { /* detail + products + order history */ },
+  updateSupplier: async (req, res) => { /* partial update */ },
+  deleteSupplier: async (req, res) => { /* removes supplier */ },
+  getReorderDashboard: async (_req, res) => { /* groups low stock by supplier */ },
+  getSupplierReorderSheet: async (req, res) => { /* supplier-specific reorder */ },
+};
+```
+
+### `routes/supplierRoutes.js`
+**Description**: Wires supplier endpoints under `/api/suppliers`. Applies `authMiddleware` plus `roleMiddleware` so Admins can write and Admin/Staff can read.
+
+```javascript
+const router = require("express").Router();
+const supplierController = require("../controllers/supplierController");
+const verifyToken = require("../middleware/authMiddleware");
+const allowRoles = require("../middleware/roleMiddleware");
+
+router.post("/", verifyToken, allowRoles("admin"), supplierController.createSupplier);
+router.get("/", verifyToken, allowRoles("admin", "staff"), supplierController.getSuppliers);
+router.get("/reorder", verifyToken, allowRoles("admin", "staff"), supplierController.getReorderDashboard);
+router.get("/:id", verifyToken, allowRoles("admin", "staff"), supplierController.getSupplierById);
+router.put("/:id", verifyToken, allowRoles("admin"), supplierController.updateSupplier);
+router.delete("/:id", verifyToken, allowRoles("admin"), supplierController.deleteSupplier);
+router.get("/:id/reorder", verifyToken, allowRoles("admin", "staff"), supplierController.getSupplierReorderSheet);
+
+module.exports = router;
 ```
 
 ### `models/itemModel.js`

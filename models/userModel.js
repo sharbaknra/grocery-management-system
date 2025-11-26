@@ -26,16 +26,18 @@ const User = {
     return rows;
   },
 
-  // Seed admin user
+  // Seed admin and staff default users (idempotent)
   seedAdmin: async () => {
     const adminEmail = 'admin@grocery.com';
     const adminPassword = 'admin123';
+    const staffEmail = 'staff@grocery.com';
+    const staffPassword = 'staff123';
 
     try {
       // Check if admin already exists
-      const [existing] = await db.promise().query('SELECT * FROM users WHERE email = ?', [adminEmail]);
+      const [existingAdmin] = await db.promise().query('SELECT * FROM users WHERE email = ?', [adminEmail]);
       
-      if (existing.length === 0) {
+      if (existingAdmin.length === 0) {
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
         await db.promise().query(
           'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
@@ -45,8 +47,22 @@ const User = {
       } else {
         console.log('ℹ️ Admin already exists:', adminEmail);
       }
+
+      // Check if staff already exists
+      const [existingStaff] = await db.promise().query('SELECT * FROM users WHERE email = ?', [staffEmail]);
+
+      if (existingStaff.length === 0) {
+        const hashedStaffPassword = await bcrypt.hash(staffPassword, 10);
+        await db.promise().query(
+          'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+          ['Staff Member', staffEmail, hashedStaffPassword, 'staff']
+        );
+        console.log('✅ Default staff created:', staffEmail);
+      } else {
+        console.log('ℹ️ Staff already exists:', staffEmail);
+      }
     } catch (err) {
-      console.error('❌ Error seeding admin:', err);
+      console.error('❌ Error seeding default users:', err);
     }
   }
 };

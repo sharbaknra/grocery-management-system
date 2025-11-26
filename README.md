@@ -35,6 +35,12 @@ A comprehensive backend system for managing grocery store operations including p
   - Low stock alerts
   - Stock movement audit trail
 
+- **Supplier Management & Purchasing (Module 2.8.4)**
+  - Dedicated supplier directory with contact details and lead times
+  - Supplier-aware product catalog (products reference supplier_id)
+  - Purchasing dashboards that auto-generate reorder sheets grouped by supplier
+  - Role-gated APIs so purchasing agents can review supplier history without UI workarounds
+
 - **Order & Sales System**
   - Persistent shopping cart
   - ACID-compliant checkout process
@@ -179,6 +185,16 @@ http://localhost:3000/api
 - `POST /api/products/create` - Create product (Admin only)
 - `PUT /api/products/update/:id` - Update product (Admin only)
 - `DELETE /api/products/delete/:id` - Delete product (Admin only)
+- `Products` support optional `supplierId` to link the item with a supplier record.
+
+### Supplier & Purchasing Endpoints (Module 2.8.4)
+- `GET /api/suppliers` - Supplier directory with product/low-stock counts (Admin/Staff)
+- `POST /api/suppliers` - Create supplier (Admin)
+- `PUT /api/suppliers/:id` - Update supplier (Admin)
+- `DELETE /api/suppliers/:id` - Delete supplier (Admin)
+- `GET /api/suppliers/:id` - Supplier details including products and order history (Admin/Staff)
+- `GET /api/suppliers/reorder` - Purchasing dashboard with reorder groups per supplier (Admin/Staff)
+- `GET /api/suppliers/:id/reorder` - Supplier-specific reorder sheet (Admin/Staff)
 
 ### Stock Endpoints
 - `GET /api/stock` - Get inventory
@@ -205,6 +221,7 @@ http://localhost:3000/api
 - `GET /api/reports/products/top-selling` - Top selling products
 - `GET /api/reports/products/dead` - Dead stock report
 - `GET /api/reports/products/category-sales` - Category sales breakdown
+- All low-stock and out-of-stock data now includes supplier metadata for faster purchasing calls.
 - `GET /api/reports/export/csv?type={type}` - Export CSV
 - `GET /api/reports/export/pdf?type={type}` - Export PDF
 

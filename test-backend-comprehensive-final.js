@@ -37,6 +37,7 @@ const testResults = {
 let adminToken = '';
 let staffToken = '';
 let customerToken = '';
+let defaultSupplierId = null;
 
 // Utility functions
 function log(message, type = 'INFO', category = 'GENERAL') {
@@ -123,6 +124,46 @@ function makeRequest(method, path, headers = {}, body = null, timeout = 10000) {
     }
     req.end();
   });
+}
+
+async function ensureDefaultSupplier() {
+  if (!adminToken) {
+    throw new Error('Admin token is required before provisioning suppliers.');
+  }
+
+  if (defaultSupplierId) {
+    return defaultSupplierId;
+  }
+
+  const listResponse = await makeRequest('GET', '/suppliers', {
+    'Authorization': `Bearer ${adminToken}`
+  });
+
+  if (listResponse.status === 200 && listResponse.body.success && Array.isArray(listResponse.body.data) && listResponse.body.data.length > 0) {
+    defaultSupplierId = listResponse.body.data[0].id;
+    return defaultSupplierId;
+  }
+
+  const supplierPayload = {
+    name: `QA Supplier ${Date.now()}`,
+    contact_name: 'QA Automation',
+    phone: '+92 300 0000000',
+    email: `qa-supplier-${Date.now()}@example.com`,
+    address: '123 Test Avenue, QA City',
+    lead_time_days: 5,
+    min_order_amount: 1000
+  };
+
+  const createResponse = await makeRequest('POST', '/suppliers', {
+    'Authorization': `Bearer ${adminToken}`
+  }, supplierPayload);
+
+  if (createResponse.status === 201 && createResponse.body.success && createResponse.body.data) {
+    defaultSupplierId = createResponse.body.data.id;
+    return defaultSupplierId;
+  }
+
+  throw new Error(`Unable to provision default supplier. Response: ${JSON.stringify(createResponse.body)}`);
 }
 
 // Database connection helper
@@ -413,7 +454,20 @@ async function runFunctionalTests() {
     recordTest('functional', 'Admin Login', false, `Error: ${error.message || error}`, error);
   }
 
-  // Test 2.3: Authentication - Login (Staff)
+  // Test 2.3: Supplier provisioning / directory access (requires Admin token)
+  try {
+    const supplierId = await ensureDefaultSupplier();
+    recordTest(
+      'functional',
+      'Supplier Directory Available',
+      true,
+      `Default supplier ready (ID: ${supplierId})`
+    );
+  } catch (error) {
+    recordTest('functional', 'Supplier Directory Available', false, `Error: ${error.message || error}`, error);
+  }
+
+  // Test 2.4: Authentication - Login (Staff)
   try {
     const response = await makeRequest('POST', '/users/login', {}, {
       email: 'staff@grocery.com',
@@ -450,6 +504,7 @@ async function runFunctionalTests() {
 
   // Test 2.5: Create Product (Admin only)
   try {
+    const supplierId = await ensureDefaultSupplier();
     const response = await makeRequest('POST', '/products/add', {
       'Authorization': `Bearer ${adminToken}`
     }, {
@@ -458,7 +513,7 @@ async function runFunctionalTests() {
       price: 9.99,
       barcode: `TEST_${Date.now()}`,
       description: 'Test product description',
-      supplier: 'Test Supplier'
+      supplierId
     });
 
     if (response.status === 201 || response.status === 200) {
