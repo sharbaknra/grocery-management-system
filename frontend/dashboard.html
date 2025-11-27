@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMS - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <h1>Grocery Management System</h1>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="pos.html">POS</a></li>
+                    <li><a href="suppliers.html">Suppliers</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                    <li><button onclick="Auth.logout()" class="logout-btn">Logout</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Dashboard</h2>
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>POS</h3>
+                <p>Process sales and manage orders.</p>
+                <a href="pos.html">Go to POS</a>
+            </div>
+            <div class="card">
+                <h3>Products</h3>
+                <p>Manage inventory, add new items.</p>
+                <a href="products.html">Manage Products</a>
+            </div>
+            <div class="card">
+                <h3>Suppliers</h3>
+                <p>Manage supplier information.</p>
+                <a href="suppliers.html">Manage Suppliers</a>
+            </div>
+            <div class="card">
+                <h3>Reports</h3>
+                <p>View sales and inventory reports.</p>
+                <a href="reports.html">View Reports</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        Auth.requireAuth();
+    </script>
+</body>
+</html>

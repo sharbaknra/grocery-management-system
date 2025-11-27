@@ -21,6 +21,7 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // ✅ Enables JSON body parsing
 app.use('/uploads', express.static('uploads'));
+app.use(express.static('frontend'));
 
 // === ROUTES ===
 app.use('/api/items', itemRoutes);

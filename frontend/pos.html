@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMS - POS</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <h1>Grocery Management System</h1>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="pos.html">POS</a></li>
+                    <li><a href="suppliers.html">Suppliers</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                    <li><button onclick="Auth.logout()" class="logout-btn">Logout</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Point of Sale</h2>
+        <div class="pos-layout">
+            <!-- Product Selection -->
+            <div>
+                <div class="form-group">
+                    <input type="text" id="searchProduct" placeholder="Search products by name or SKU..." oninput="searchProducts()">
+                </div>
+                <div id="productGrid" class="product-grid">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Cart -->
+            <div class="cart-panel">
+                <h3>Cart</h3>
+                <div id="cartItems" class="cart-items">
+                    <!-- Cart items will be loaded here -->
+                </div>
+                <div class="cart-total">
+                    Total: $<span id="cartTotal">0.00</span>
+                </div>
+                <button onclick="checkout()" style="width: 100%;">Checkout</button>
+                <button onclick="clearCart()" class="danger" style="width: 100%; margin-top: 10px;">Clear Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        Auth.requireAuth();
+
+        const productGrid = document.getElementById('productGrid');
+        const cartItemsContainer = document.getElementById('cartItems');
+        const cartTotalElement = document.getElementById('cartTotal');
+        let cart = [];
+
+        // Load Products
+        async function loadProducts(query = '') {
+            try {
+                let url = '/products';
+                if (query) {
+                    url = `/products/search?query=${query}`;
+                }
+                const products = await Api.get(url);
+                displayProducts(products);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function displayProducts(products) {
+            productGrid.innerHTML = products.map(p => `
+                <div class="product-card" onclick="addToCart(${p.id})">
+                    ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : ''}
+                    <h4>${p.name}</h4>
+                    <p>Price: $${p.price}</p>
+                    <p>Stock: ${p.stock_quantity}</p>
+                </div>
+            `).join('');
+        }
+
+        function searchProducts() {
+            const query = document.getElementById('searchProduct').value;
+            loadProducts(query);
+        }
+
+        // Cart Functions
+        async function loadCart() {
+            try {
+                const cartData = await Api.get('/orders/cart');
+                // The API might return { items: [], total: 0 } or similar structure
+                // Adjust based on actual API response structure
+                if (Array.isArray(cartData)) {
+                    cart = cartData;
+                } else if (cartData.items) {
+                    cart = cartData.items;
+                } else {
+                    cart = [];
+                }
+                displayCart();
+            } catch (error) {
+                console.error('Failed to load cart', error);
+            }
+        }
+
+        function displayCart() {
+            cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div>
+                        <strong>${item.name || item.product_name}</strong><br>
+                        $${item.price} x ${item.quantity}
+                    </div>
+                    <div>
+                        <button class="danger" style="padding: 2px 5px;" onclick="removeFromCart(${item.product_id})">x</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotalElement.textContent = total.toFixed(2);
+        }
+
+        async function addToCart(productId) {
+            try {
+                await Api.post('/orders/cart/add', { productId, quantity: 1 });
+                await loadCart();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function removeFromCart(productId) {
+            try {
+                await Api.delete(`/orders/cart/remove/${productId}`);
+                await loadCart();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function clearCart() {
+            if (confirm('Clear cart?')) {
+                try {
+                    await Api.delete('/orders/cart/clear');
+                    await loadCart();
+                } catch (error) {
+                    alert(error.message);
+                }
+            }
+        }
+
+        async function checkout() {
+            if (cart.length === 0) {
+                alert('Cart is empty');
+                return;
+            }
+
+            if (confirm('Proceed to checkout?')) {
+                try {
+                    const result = await Api.post('/orders/checkout', { paymentMethod: 'cash' }); // Assuming payment method
+                    alert('Order placed successfully! Order ID: ' + result.orderId);
+                    await loadCart(); // Cart should be empty now
+                } catch (error) {
+                    alert('Checkout failed: ' + error.message);
+                }
+            }
+        }
+
+        // Initial Load
+        loadProducts();
+        loadCart();
+    </script>
+</body>
+</html>
