@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shopping Cart</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007BFF",
+                        "primary-hover": "#0069D9",
+                        "destructive": "#DC3545",
+                        "background-light": "#F8F9FA",
+                        "surface-light": "#FFFFFF",
+                        "text-light": "#212529",
+                        "text-secondary-light": "#6c757d",
+                        "border-light": "#dee2e6",
+
+                        "background-dark": "#121212",
+                        "surface-dark": "#1e1e1e",
+                        "text-dark": "#e0e0e0",
+                        "text-secondary-dark": "#a0a0a0",
+                        "border-dark": "#333333",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-4 sm:px-6 lg:px-8 py-4 bg-surface-light dark:bg-surface-dark">
+<div class="flex items-center gap-4 text-text-light dark:text-text-dark">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">GroceryManager</h2>
+</div>
+<div class="flex flex-1 justify-end">
+<div class="flex items-center gap-6">
+<a class="text-sm font-medium leading-normal text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary" href="#">Back to Shopping</a>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 sm:px-6 lg:px-8 py-10">
+<div class="mx-auto max-w-7xl">
+<div class="flex flex-wrap justify-between gap-4 pb-8">
+<div class="flex min-w-72 flex-col gap-2">
+<p class="text-4xl font-black leading-tight tracking-[-0.033em]">Your Cart</p>
+<p class="text-base font-normal leading-normal text-text-secondary-light dark:text-text-secondary-dark">Review your items before proceeding to checkout.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2">
+<div class="overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark">
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark">
+<tr>
+<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark" colspan="2">Product</th>
+<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">Quantity</th>
+<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">Price</th>
+<th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">Total</th>
+<th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md w-16 h-16" data-alt="Organic Milk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCiD31P-cPd4eNk07BVurUdubE7xUhj3PYoKRuK5aAKdxz6bvLjhwaOxznA_4A80QGteKQj7qEqD54-5ho2YhaYP2mWDLEMmfUJLEuzNN11VmKQ28Z_jwVBMfzARDCJl-H7O6OaxdN_VtsCBrcSugOZhBnSVBZLtzApQ0bba0sKvcsF-X8KgyTHdYcSzaJbSZEVyLMArZXA4HEXd0fjYdeSwNHNTzLfeiS06rTTq_L2z92098kPKGRkLJOzxMqCFGj-CINeePZd4WTW");'></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-medium">Organic Milk, 1 Gallon</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<button class="flex h-8 w-8 items-center justify-center rounded-full border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark">-</button>
+<input class="w-12 h-8 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-center" type="number" value="2"/>
+<button class="flex h-8 w-8 items-center justify-center rounded-full border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark">+</button>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm">$3.99</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">$7.98</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-destructive hover:text-red-700">
+<span class="material-symbols-outlined align-middle">delete</span>
+</button>
+</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md w-16 h-16" data-alt="Whole Wheat Bread" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAQo1MfF5oglsWn-XoRgzsCRhd6_6C-ImjCTWzrgH06ogOPXHrM-CVM436zD0Nlly9xqTioivGKUERe1tdPgbnELD5fKD1wd9x_FyGjjZF4qi-fCG9s493OVqMbmJ-W0QVoyalWIhhdl_40kQw_zfkPmapFW4kB0zleFJcXeFBXBzgSTMOq0IiJrlMKmtLTsEEFjR7A4WtLMghQdZGQg4_b3tTWNtb3uksngF0V3s0mIkv3L6r2xlt7V41UrUVCE3qUautcV3hD4fhg");'></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-medium">Whole Wheat Bread</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<button class="flex h-8 w-8 items-center justify-center rounded-full border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark">-</button>
+<input class="w-12 h-8 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-center" type="number" value="1"/>
+<button class="flex h-8 w-8 items-center justify-center rounded-full border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark">+</button>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm">$2.49</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">$2.49</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-destructive hover:text-red-700">
+<span class="material-symbols-outlined align-middle">delete</span>
+</button>
+</td>
+</tr>
+<tr class="border-b border-border-light dark:border-border-dark">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md w-16 h-16" data-alt="Fresh Apples" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC69NOhXywx_tl94vu4W3hwbTznNb4KLU5x8BylJHKrK22yG6DAfTo0CvxJ1saG5QtaEDqNENhcH8LVS7zujr-G3BiBh5K092FEG2Jmw7u7JxBSUtcAilDlVqqyQXp6tWmPzgYev6yA-1YUqjgq-h7ulhy_xnMsxWAH6Qo8YTK4N6mVmo3O136Z-WrkkE1-CY_7zv7XXkTDgaF_tkZ2w9bsxReKkH-buHSg6R88Pt_wpGyyArCLx1ZCFFWLarQ-_j-q2f21ljXFM99I");'></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm font-medium">Fresh Apples (lb)</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<button class="flex h-8 w-8 items-center justify-center rounded-full border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark">-</button>
+<input class="w-12 h-8 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-center" type="number" value="3"/>
+<button class="flex h-8 w-8 items-center justify-center rounded-full border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark">+</button>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm">$1.99</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">$5.97</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-destructive hover:text-red-700">
+<span class="material-symbols-outlined align-middle">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 text-right">
+<button class="text-sm font-medium text-destructive hover:underline">Empty Cart</button>
+</div>
+</div>
+</div>
+<div class="lg:col-span-1">
+<div class="rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 space-y-6">
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em]">Order Summary</h2>
+<div class="space-y-3">
+<div class="flex justify-between gap-x-6">
+<p class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">Subtotal</p>
+<p class="text-sm font-medium text-right">$16.44</p>
+</div>
+<div class="flex justify-between gap-x-6">
+<p class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">Tax (Est.)</p>
+<p class="text-sm font-medium text-right">$1.32</p>
+</div>
+<div class="flex justify-between gap-x-6">
+<p class="text-sm font-normal text-text-secondary-light dark:text-text-secondary-dark">Discounts</p>
+<p class="text-sm font-medium text-right text-green-600">-$1.00</p>
+</div>
+</div>
+<div class="border-t border-border-light dark:border-border-dark"></div>
+<div class="flex justify-between gap-x-6">
+<p class="text-lg font-bold">Total</p>
+<p class="text-lg font-bold text-right">$16.76</p>
+</div>
+<button class="w-full rounded-lg bg-primary py-3 px-4 text-center font-semibold text-white hover:bg-primary-hover transition-colors">Proceed to Checkout</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

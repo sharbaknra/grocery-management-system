@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Product - GroceryManager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4A90E2",
+              "background-light": "#F8F9FA",
+              "background-dark": "#102213",
+              "container-light": "#FFFFFF",
+              "container-dark": "#182C1B",
+              "text-light": "#333333",
+              "text-dark": "#E0E0E0",
+              "border-light": "#dbe6dd",
+              "border-dark": "#2a3f2d",
+              "placeholder-light": "#618968",
+              "placeholder-dark": "#a0b1a3",
+              "danger": "#D9534F",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-6 sm:px-10 py-3 bg-container-light dark:bg-container-dark">
+<div class="flex items-center gap-4 text-text-light dark:text-text-dark">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12 23c-2.76 0-5.41-1.05-7.42-2.93S2 15.76 2 13V5c0-.55.45-1 1-1h1c.55 0 1 .45 1 1v8c0 2.21 1.29 4.29 3.28 5.44C9.9 19.33 11.96 19.5 13.8 19c1.07-.3 2.07-.86 2.92-1.63L21 13.12V5c0-.55.45-1 1-1h1c.55 0 1 .45 1 1v8.12c0 1.33-.53 2.6-1.46 3.54l-4.24 4.24C15.68 22.51 13.87 23 12 23z M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold tracking-tight">GroceryManager</h2>
+</div>
+<div class="hidden md:flex flex-1 justify-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-primary" href="#">Products</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Suppliers</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Stock</a>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ml-2" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjwjkh61AcH0Slia8MDhCuRApX1ZaUuscPpRez-SvN5bQpc1SuhPSq8vNdnhoxx-rY0cCDQM5xqrdcNq15fTGDAArJwQ_fbK-pJl0oRgi_el1L0ZRdBhat0ecNkdyXfAil0QrTaBOqYzsD_7nxBdZHBmcKFrZG4rkIQFtUYFFajxaGNhI3BaSQBzb4Bvv-y-UXDW1-NR6FDcOsBNuLVDs0IfxSX2dJnirRdqh7_U2bQ49i8y7KEZWl5UXEZEqNNzvUjv6DbhI-vZBp");'></div>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-8 px-4 sm:px-6 lg:px-8">
+<div class="w-full max-w-4xl flex flex-col gap-8">
+<div class="flex flex-wrap justify-between gap-4 items-center">
+<h1 class="text-4xl font-black tracking-[-0.033em]">Add New Product</h1>
+</div>
+<form class="space-y-8">
+<!-- Basic Information Section -->
+<div class="bg-container-light dark:bg-container-dark rounded-xl shadow-sm p-6">
+<h2 class="text-2xl font-bold tracking-tight pb-6 border-b border-border-light dark:border-border-dark">Basic Information</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Product Name<span class="text-danger">*</span></p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" placeholder="e.g., Organic Apples" value=""/>
+<p class="text-danger text-sm mt-1">Product Name is required.</p>
+</label>
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Category</p>
+<select class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 p-3 text-base font-normal focus:ring-2 focus:ring-primary/50">
+<option value="">Select a category</option>
+<option value="fruits">Fruits</option>
+<option value="vegetables">Vegetables</option>
+<option value="dairy">Dairy</option>
+<option value="bakery">Bakery</option>
+</select>
+</label>
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Price<span class="text-danger">*</span></p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" placeholder="0.00" step="0.01" type="number" value=""/>
+</label>
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Barcode (SKU)</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" placeholder="Enter barcode number" value=""/>
+</label>
+</div>
+</div>
+<!-- Description & Info Section -->
+<div class="bg-container-light dark:bg-container-dark rounded-xl shadow-sm p-6">
+<h2 class="text-2xl font-bold tracking-tight pb-6 border-b border-border-light dark:border-border-dark">Description &amp; Info</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+<label class="flex flex-col md:col-span-2">
+<p class="text-base font-medium pb-2">Description</p>
+<textarea class="form-textarea flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary min-h-28 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" placeholder="Add a short description for the product..."></textarea>
+</label>
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Expiry Date</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" type="date"/>
+</label>
+</div>
+</div>
+<!-- Supplier & Stock Section -->
+<div class="bg-container-light dark:bg-container-dark rounded-xl shadow-sm p-6">
+<h2 class="text-2xl font-bold tracking-tight pb-6 border-b border-border-light dark:border-border-dark">Supplier &amp; Stock</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Supplier</p>
+<select class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 p-3 text-base font-normal focus:ring-2 focus:ring-primary/50">
+<option value="">Select a supplier</option>
+<option value="supplier1">Global Foods Inc.</option>
+<option value="supplier2">Farm Fresh Organics</option>
+</select>
+</label>
+<div></div> <!-- Spacer -->
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Initial Quantity<span class="text-danger">*</span></p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" placeholder="0" type="number" value=""/>
+</label>
+<label class="flex flex-col">
+<p class="text-base font-medium pb-2">Minimum Stock Level</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-placeholder-light dark:placeholder-text-placeholder-dark p-3 text-base font-normal focus:ring-2 focus:ring-primary/50" type="number" value="10"/>
+</label>
+</div>
+</div>
+<!-- Image Upload Section -->
+<div class="bg-container-light dark:bg-container-dark rounded-xl shadow-sm p-6">
+<h2 class="text-2xl font-bold tracking-tight pb-6 border-b border-border-light dark:border-border-dark">Image Upload</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+<div class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-light dark:border-border-dark p-6 text-center">
+<span class="material-symbols-outlined text-5xl text-gray-400">cloud_upload</span>
+<p class="mt-2 text-sm text-text-light/80 dark:text-text-dark/80"><span class="font-semibold text-primary">Click to upload</span> or drag and drop</p>
+<p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+<input class="sr-only" type="file"/>
+</div>
+<div class="flex items-center justify-center bg-background-light dark:bg-background-dark rounded-lg p-4 h-48">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg h-full" data-alt="Image preview of uploaded product" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJqhrZY9geQyNi2EhUQlfYEq1sjVpp31S2ro3SalvGLaCnwVZrvWznpg2_kOLRsi0pg6vRwUMcrLOtYIWxJXdVJVIYCB44Z_7Zmo89URnCPV2SCTMC6Q47ZF1cSI6SxNlhEnjYftPfAhyawVto2XMwytq7zfB41XD8vYIKzhPYWKbZnz9rkupdFCUDINIGT9Qq1rC1N4zXyKjqW1WeeBtoizCVEkYHDVgokalkOrfv8SV4cYzirFSBF5mQtUklPkg6JV8sBcKKgdt3");'></div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex justify-end gap-4 pt-4">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-gray-200 dark:bg-gray-700 text-text-light dark:text-text-dark px-6 text-base font-bold leading-normal tracking-wide hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" type="button">Cancel</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-white px-6 text-base font-bold leading-normal tracking-wide hover:bg-primary/90 transition-colors" type="submit">Save Product</button>
+</div>
+</form>
+</div>
+</main>
+</div>
+</div>
+</body></html>

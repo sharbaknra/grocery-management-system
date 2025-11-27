@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Product Details - GrocerSys</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ec37",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102213",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 px-4 sm:px-6 md:px-10 py-3 bg-white dark:bg-black/20">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-gray-900 dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">GrocerSys</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium leading-normal text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" href="#">Dashboard</a>
+<a class="text-sm font-medium leading-normal text-gray-900 dark:text-white" href="#">Products</a>
+<a class="text-sm font-medium leading-normal text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" href="#">Suppliers</a>
+<a class="text-sm font-medium leading-normal text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<label class="hidden sm:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-gray-500 dark:text-gray-400 flex bg-gray-100 dark:bg-gray-800 items-center justify-center pl-3 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-gray-100 dark:bg-gray-800 focus:border-none h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal" placeholder="Search" value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWD3E_NFg9o0W_z0UPeA4RQ-p2Jy7FYxIeVVgbyEzRwGCFhuqtWAhG98Cq4VjuOfLdipvHFhn8bQNdD6N9r_edjYmoKi5hUGX5_dqh4Mq_-RYtRic3RjLxcz39-bIJdzPuBEMTLilMQzs63828G7IQ3BZYeHG_t3tlcqS4_RSBXKdIuwxYG6SxC4N90qurJ2bYJiM8b2GzoOnhI-8ddoR9xoqAz8cpwUVYgnkUTq5baDy5DXZu2X_4MvxyL_fHaXk0a0JIh2jTijAh");'></div>
+</div>
+</header>
+<main class="px-4 sm:px-6 lg:px-10 py-8">
+<div class="mx-auto max-w-6xl">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 pb-4">
+<a class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary" href="#">Products</a>
+<span class="text-gray-400 dark:text-gray-500 text-sm font-medium leading-normal">/</span>
+<a class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary" href="#">Fruits</a>
+<span class="text-gray-400 dark:text-gray-500 text-sm font-medium leading-normal">/</span>
+<span class="text-gray-900 dark:text-white text-sm font-medium leading-normal">Organic Gala Apples</span>
+</div>
+<!-- Page Heading & Actions -->
+<div class="flex flex-wrap items-center justify-between gap-4 py-4">
+<div class="flex flex-col gap-1">
+<p class="text-gray-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">Organic Gala Apples</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Product ID: #P12345</p>
+</div>
+<div class="flex flex-1 gap-3 flex-wrap justify-start sm:justify-end">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-gray-900 text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90">
+<span class="truncate">Edit Product</span>
+</button>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-red-600/10 text-red-500 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-red-600/20">
+<span class="truncate">Delete Product</span>
+</button>
+</div>
+</div>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6">
+<!-- Left Column (Product Details) -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<div class="bg-white dark:bg-black/20 rounded-xl shadow-sm overflow-hidden">
+<div class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden min-h-80" data-alt="A photograph of fresh Organic Gala Apples in a bowl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCTkiGkJc8Y_iMvoWz3tl6mmCxKYNF6gXMlgLa4TwizRmMmZHa56Zru5vxlS6XtIQz9YyGjdyNCi9iyl6KDGppLWnTsQMfmGwF99PLqGDwJwTna61goSDAIpUJYcF8FyHQ_umfT1XHQB0290HeuRHRkXtHlI_AG1gIX0C7IYmM4tjU-mv9cXUlV53-Tf57fNiGDYqh3PXXoHSZn7aNbNBgm9VwmzEgtGJ4doKDC4F7IeinEajtUfq_c5YCjzZiTMlDmZnQ9lN-kNSx2");'></div>
+<div class="p-6 space-y-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category</p>
+<p class="text-base text-gray-900 dark:text-white">Fresh Fruits</p>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Price</p>
+<p class="text-base text-gray-900 dark:text-white">$2.99 / lb</p>
+</div>
+<div class="sm:col-span-2">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Description</p>
+<p class="text-base text-gray-700 dark:text-gray-300">Crisp, sweet, and juicy Organic Gala Apples, sourced from certified organic farms. Perfect for snacking, baking, or adding a fresh crunch to salads.</p>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Barcode</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-900 dark:text-white text-3xl">barcode</span>
+<p class="font-mono text-base text-gray-900 dark:text-white">033383201046</p>
+</div>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Expiry Date</p>
+<p class="text-base text-gray-900 dark:text-white">December 31, 2024</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (Stock & Supplier) -->
+<div class="flex flex-col gap-6">
+<!-- Stock Card -->
+<div class="bg-white dark:bg-black/20 rounded-xl shadow-sm p-6">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Stock Details</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Current Quantity</p>
+<p class="text-base font-semibold text-gray-900 dark:text-white">250 lbs</p>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Minimum Stock</p>
+<p class="text-base font-semibold text-gray-700 dark:text-gray-300">50 lbs</p>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</p>
+<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600 dark:text-green-400">
+<span class="size-1.5 rounded-full bg-green-500"></span> In Stock
+                                        </span>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Restock</p>
+<p class="text-base font-semibold text-gray-700 dark:text-gray-300">June 15, 2024</p>
+</div>
+<button class="w-full flex mt-4 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/20 text-gray-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/30">
+<span class="truncate">Update Stock</span>
+</button>
+</div>
+</div>
+<!-- Supplier Card -->
+<div class="bg-white dark:bg-black/20 rounded-xl shadow-sm p-6">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Supplier Details</h3>
+<div class="space-y-4">
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Supplier Name</p>
+<p class="text-base text-gray-900 dark:text-white">Green Valley Organics</p>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Contact Person</p>
+<p class="text-base text-gray-900 dark:text-white">Jane Doe</p>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phone Number</p>
+<p class="text-base text-gray-900 dark:text-white">(555) 123-4567</p>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email</p>
+<p class="text-base text-gray-900 dark:text-white">jane.doe@gvorganics.com</p>
+</div>
+<button class="w-full flex mt-4 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="truncate">View Supplier</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

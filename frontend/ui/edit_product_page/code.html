@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Product - GroceryManager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4A90E2",
+              "background-light": "#F8F9FA",
+              "background-dark": "#102213",
+              "surface": "#FFFFFF",
+              "text-primary": "#333333",
+              "text-secondary": "#6C757D",
+              "destructive": "#D0021B",
+              "success": "#28A745"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.25rem", 
+                "lg": "0.5rem", 
+                "xl": "0.75rem", 
+                "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-primary">
+<div class="relative flex min-h-screen w-full flex-row">
+<!-- SideNavBar -->
+<div class="hidden lg:flex w-64 flex-col justify-between border-r border-gray-200 bg-surface dark:bg-background-dark p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="GroceryManager logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBvqe72TR6deCWiVDmtREh0BXXIQJOwGRxgV5tplUxuwT_6_qOElxIOrBvqUu9P8qHw-05wjWHZKHnipGyuYQp_30PsAfNyVBPdZVRl-aMIlRuxvTEZBcqLwRNvn-8e89k6_ii4w8k5XkXxSEgKbV3vKO-eCgBZa0GZ01XLRwIlPU6CBoK4Ssb-yIBKdn1B1-WMucZxvCifiLS6LGcDekY7rns1MSPAeolVeur-4qFjbfjM09LOgD66YG2zmOsPjpHwU3kdocrIegEn");'></div>
+<div class="flex flex-col">
+<h1 class="text-text-primary dark:text-white text-base font-medium leading-normal">GroceryManager</h1>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-text-primary dark:text-gray-300">dashboard</span>
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20" href="#">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+<p class="text-primary text-sm font-medium leading-normal">Products</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-text-primary dark:text-gray-300">local_shipping</span>
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal">Suppliers</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-text-primary dark:text-gray-300">settings</span>
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal">Settings</p>
+</a>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-text-primary dark:text-gray-300">logout</span>
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal">Log out</p>
+</a>
+</div>
+</div>
+<!-- Main Content -->
+<main class="flex-1 p-4 sm:p-6 lg:p-10">
+<div class="mx-auto max-w-4xl">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 mb-4">
+<a class="text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-primary text-sm font-medium leading-normal" href="#">Products</a>
+<span class="text-text-secondary dark:text-gray-400 text-sm font-medium leading-normal">/</span>
+<a class="text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-primary text-sm font-medium leading-normal" href="#">Edit</a>
+<span class="text-text-secondary dark:text-gray-400 text-sm font-medium leading-normal">/</span>
+<span class="text-text-primary dark:text-white text-sm font-medium leading-normal">Fresh Apples</span>
+</div>
+<!-- PageHeading -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+<div class="flex min-w-72 flex-col gap-1">
+<p class="text-text-primary dark:text-white text-3xl font-bold leading-tight tracking-tight">Edit Product</p>
+<p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-normal">Update details for Fresh Apples</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-text-primary bg-transparent hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800">Go Back</button>
+<button class="flex items-center justify-center whitespace-nowrap rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white">Save Changes</button>
+</div>
+</div>
+<!-- Form Container -->
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Left Column -->
+<div class="w-full lg:w-2/3">
+<div class="bg-surface dark:bg-gray-900 rounded-xl shadow-sm p-6 space-y-6">
+<!-- SectionHeader -->
+<h2 class="text-text-primary dark:text-white text-lg font-bold leading-tight tracking-tight">Basic Information</h2>
+<!-- Form Fields -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<label class="flex flex-col col-span-2">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Product Name</p>
+<input class="form-input flex w-full rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 placeholder:text-text-secondary h-12 p-3 text-sm font-normal" value="Fresh Apples"/>
+</label>
+<label class="flex flex-col">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Category</p>
+<select class="form-select w-full rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 h-12 p-3 text-sm font-normal">
+<option>Fruits</option>
+<option>Vegetables</option>
+<option>Dairy</option>
+</select>
+</label>
+<label class="flex flex-col">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Price ($)</p>
+<input class="form-input flex w-full rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 placeholder:text-text-secondary h-12 p-3 text-sm font-normal" type="number" value="2.99"/>
+</label>
+<label class="flex flex-col col-span-2">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Barcode (read-only)</p>
+<input class="form-input flex w-full rounded-lg text-text-secondary bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:ring-0 h-12 p-3 text-sm font-normal" readonly="" value="033383201036"/>
+</label>
+</div>
+<hr class="border-gray-200 dark:border-gray-700"/>
+<!-- SectionHeader -->
+<h2 class="text-text-primary dark:text-white text-lg font-bold leading-tight tracking-tight pt-2">Description &amp; Info</h2>
+<div class="grid grid-cols-1 gap-6">
+<label class="flex flex-col">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Description</p>
+<textarea class="form-textarea w-full rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 placeholder:text-text-secondary p-3 text-sm font-normal" rows="4">Crisp and sweet apples, perfect for snacking or baking. Sourced from local orchards.</textarea>
+</label>
+<label class="flex flex-col">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Expiry Date</p>
+<input class="form-input flex w-full rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 h-12 p-3 text-sm font-normal" type="date" value="2024-10-26"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Right Column -->
+<div class="w-full lg:w-1/3 flex flex-col gap-8">
+<div class="bg-surface dark:bg-gray-900 rounded-xl shadow-sm p-6 space-y-6">
+<h2 class="text-text-primary dark:text-white text-lg font-bold leading-tight tracking-tight">Product Image</h2>
+<div class="flex flex-col items-center gap-4">
+<div class="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg bg-cover bg-center" data-alt="A close-up of several red apples in a basket." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgVBUQk9EW-1lup1xcErkH_ct2IXpS1DQWKEAKFPIfkBg3wsSlYmZwB2XaYog3WM2CRurQ4I6TKXUkwnxCS1__63_2LZ7F-EmFFUHrZjGcU9jEy82XMh0S3m9d-R_8h4VenFmjUj11eLec2qH1rfFchu3mnVwKX6kU6j14R3l7l7nB0so7Me3hGpXp0h1p5HFU4Jj0Yk1KkHVcmeMKjKA9UKYXDza5UI4H5Iu_GvbKIbUgYa2ET6VAPTq4aKKjGqMTpZ7bAsrGAW1K");'></div>
+<button class="w-full flex items-center justify-center whitespace-nowrap rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-2.5 text-sm font-medium text-text-primary dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
+                                   Upload New Image
+                               </button>
+</div>
+</div>
+<div class="bg-surface dark:bg-gray-900 rounded-xl shadow-sm p-6 space-y-6">
+<h2 class="text-text-primary dark:text-white text-lg font-bold leading-tight tracking-tight">Supplier &amp; Stock</h2>
+<label class="flex flex-col">
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Supplier</p>
+<select class="form-select w-full rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 h-12 p-3 text-sm font-normal">
+<option>Local Farms Inc.</option>
+<option>Green Valley Produce</option>
+<option>Orchard Fresh</option>
+</select>
+</label>
+<div>
+<p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">Update Stock Level</p>
+<div class="relative flex items-center">
+<button class="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-l-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-text-primary dark:text-white">-</button>
+<input class="form-input w-full text-center rounded-lg text-text-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-primary focus:ring-primary/50 h-12 px-12 text-sm font-normal" type="number" value="150"/>
+<button class="absolute right-0 top-0 flex h-12 w-12 items-center justify-center rounded-r-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-text-primary dark:text-white">+</button>
+</div>
+</div>
+</div>
+<div class="bg-surface dark:bg-gray-900 rounded-xl shadow-sm p-6">
+<h2 class="text-text-primary dark:text-white text-lg font-bold leading-tight tracking-tight mb-4">Actions</h2>
+<button class="w-full flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10">
+<span class="material-symbols-outlined text-destructive" style="font-size: 20px;">delete</span>
+                                  Delete Product
+                              </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

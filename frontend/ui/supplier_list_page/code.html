@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suppliers List - Grocery MS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ec37",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102213",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="flex w-64 flex-col border-r border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900/50">
+<div class="flex h-full min-h-0 flex-col justify-between p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 p-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Company Logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhlKCqToBlDyoDKRusKtGSsecLsuKTco23EhuHjQVFHCWCts8e2dWl4QKmjePM_k0couollLMOUoCKzL6VShSu0o73fKde-avDOlSHhdX30RFgQESlkBYAABiTWWtXdLcRmdBZ7CUMN9d7nhDqq-jhCYNrNN8hwPNbX4R-v-wK57DKjz2Mu2KNRhdcTrmCH-9RL73crJu-wj_b6H-KPJCPaIIAaZvC8efUyVIBxeKxMxbdDsteCiFxVWNBkth8dS_14NuwDfCXDaNd");'></div>
+<div class="flex flex-col">
+<h1 class="text-gray-900 dark:text-gray-50 text-base font-medium leading-normal">Grocery MS</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">inventory_2</span>
+<p class="text-sm font-medium leading-normal">Inventory</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 dark:bg-primary/30" href="#">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100" style="font-variation-settings: 'FILL' 1;">domain</span>
+<p class="text-gray-900 dark:text-gray-50 text-sm font-medium leading-normal">Suppliers</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">bar_chart</span>
+<p class="text-sm font-medium leading-normal">Reports</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">help</span>
+<p class="text-sm font-medium leading-normal">Support</p>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-6 lg:p-8">
+<div class="mx-auto max-w-7xl">
+<!-- PageHeading -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div class="flex flex-col gap-1">
+<h1 class="text-gray-900 dark:text-gray-50 text-3xl font-black leading-tight tracking-[-0.03em]">Suppliers</h1>
+<p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">Manage your supplier information efficiently.</p>
+</div>
+</div>
+<!-- ToolBar & SearchBar -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+<div class="w-full md:w-auto md:flex-1 md:max-w-md">
+<label class="flex flex-col w-full h-12">
+<div class="relative flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-gray-500 dark:text-gray-400 absolute left-0 top-0 flex items-center justify-center h-full pl-4">
+<span class="material-symbols-outlined text-lg">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 pl-12 pr-4 text-base font-normal leading-normal" placeholder="Search suppliers..." value=""/>
+</div>
+</label>
+</div>
+<button class="flex w-full md:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-gray-900 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-6 hover:bg-opacity-90 transition-colors">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">add</span>
+<span>Add Supplier</span>
+</button>
+</div>
+<!-- Table -->
+<div class="overflow-hidden rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900/50">
+<div class="overflow-x-auto">
+<table class="min-w-full">
+<thead class="border-b border-gray-200/60 dark:border-gray-700/60">
+<tr>
+<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Supplier Name</th>
+<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Contact Person</th>
+<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Phone</th>
+<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Email</th>
+<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Products</th>
+<th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200/60 dark:divide-gray-700/60">
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-50 text-sm font-medium">Global Foods Inc.</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">Maria Garcia</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">(123) 456-7890</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">maria.g@globalfoods.com</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">42</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex items-center gap-4">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-50 text-sm font-medium">Fresh Produce Co.</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">John Smith</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">(987) 654-3210</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">j.smith@freshproduce.co</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">115</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex items-center gap-4">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-50 text-sm font-medium">Artisan Bakery Goods</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">Emily White</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">(555) 123-4567</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">emily.w@artisangoods.net</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">28</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex items-center gap-4">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-50 text-sm font-medium">Dairy Delights Farm</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">David Chen</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">(222) 333-4444</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">d.chen@dairydelights.com</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">64</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex items-center gap-4">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-50 text-sm font-medium">Organic Harvest</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">Samantha Green</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">(444) 555-6666</td>
+<td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300 text-sm">sam.g@organicharvest.org</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-800 dark:text-gray-200">89</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex items-center gap-4">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between border-t border-gray-200/60 dark:border-gray-700/60 px-4 py-3 sm:px-6">
+<div class="flex flex-1 justify-between sm:hidden">
+<a class="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700" href="#">Previous</a>
+<a class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700" href="#">Next</a>
+</div>
+<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+<div>
+<p class="text-sm text-gray-700 dark:text-gray-300">
+                                        Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">32</span> results
+                                    </p>
+</div>
+<div>
+<nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0" href="#">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</a>
+<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary/20 dark:bg-primary/30 px-4 py-2 text-sm font-semibold text-gray-900 dark:text-gray-50 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">1</a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0" href="#">2</a>
+<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0 md:inline-flex" href="#">3</a>
+<span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600">...</span>
+<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0 md:inline-flex" href="#">7</a>
+<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-20 focus:outline-offset-0" href="#">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>
