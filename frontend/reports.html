@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMS - Reports</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .report-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <h1>Grocery Management System</h1>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="pos.html">POS</a></li>
+                    <li><a href="suppliers.html">Suppliers</a></li>
+                    <li><a href="reports.html">Reports</a></li>
+                    <li><button onclick="Auth.logout()" class="logout-btn">Logout</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Reports</h2>
+
+        <div class="report-controls">
+            <button onclick="loadReport('sales/summary')">Sales Summary</button>
+            <button onclick="loadReport('inventory/low-stock')">Low Stock</button>
+            <button onclick="loadReport('products/top-selling')">Top Selling</button>
+        </div>
+
+        <div id="reportContent" class="table-container">
+            <p>Select a report to view data.</p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        Auth.requireAuth();
+
+        const reportContent = document.getElementById('reportContent');
+
+        async function loadReport(type) {
+            reportContent.innerHTML = '<p>Loading...</p>';
+            try {
+                const data = await Api.get(`/reports/${type}`);
+                renderReport(type, data);
+            } catch (error) {
+                reportContent.innerHTML = `<p class="alert alert-error">Error loading report: ${error.message}</p>`;
+            }
+        }
+
+        function renderReport(type, data) {
+            if (!data || (Array.isArray(data) && data.length === 0)) {
+                reportContent.innerHTML = '<p>No data available.</p>';
+                return;
+            }
+
+            let html = '';
+
+            if (type === 'sales/summary') {
+                // Assuming data structure like { today: X, week: Y, month: Z }
+                html = `
+                    <h3>Sales Summary</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Total Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Today</td><td>$${data.today || 0}</td></tr>
+                            <tr><td>This Week</td><td>$${data.week || 0}</td></tr>
+                            <tr><td>This Month</td><td>$${data.month || 0}</td></tr>
+                        </tbody>
+                    </table>
+                `;
+            } else if (type === 'inventory/low-stock') {
+                 html = `
+                    <h3>Low Stock Items</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Current Stock</th>
+                                <th>Reorder Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => `
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.stock_quantity}</td>
+                                    <td>${item.reorder_level || 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else if (type === 'products/top-selling') {
+                html = `
+                    <h3>Top Selling Products</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Total Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => `
+                                <tr>
+                                    <td>${item.product_name || item.name}</td>
+                                    <td>${item.total_sold}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                // Generic table for other reports
+                 html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+
+            reportContent.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
