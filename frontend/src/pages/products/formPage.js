@@ -1,5 +1,6 @@
 import { productsService } from "../../services/productsService.js";
 import { suppliersService } from "../../services/suppliersService.js";
+import { getImageUrl } from "../../services/apiClient.js";
 
 export function registerProductFormPage(register) {
   register("product-form", productFormPage);
@@ -319,7 +320,7 @@ function productFormPage() {
 
         // Show existing image
         if (product.image_url || product.image) {
-          const url = product.image_url || product.image;
+          const url = getImageUrl(product.image_url || product.image);
           if (imagePreview) {
             imagePreview.style.backgroundImage = `url('${url}')`;
             imagePreview.classList.remove("hidden");

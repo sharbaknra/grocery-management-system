@@ -1,5 +1,6 @@
 import { productsService } from "../../services/productsService.js";
 import { cartService } from "../../services/cartService.js";
+import { getImageUrl } from "../../services/apiClient.js";
 
 export function registerProductsListPage(register) {
   register("products", productsListPage);
@@ -194,7 +195,7 @@ function productsListPage() {
 
       function renderProductCard(product) {
         const stockStatus = getStockStatus(product.stock_quantity || product.quantity || 0);
-        const imageUrl = product.image_url || product.image || "https://via.placeholder.com/300x200?text=No+Image";
+        const imageUrl = getImageUrl(product.image_url || product.image);
         const price = parseFloat(product.price) || 0;
         const category = product.category || "Uncategorized";
 

@@ -5,7 +5,23 @@ import { authService } from "./services/authService.js";
 // CONFIGURATION
 // ============================================================================
 const LAST_ROUTE_KEY = "gms:lastRoute";
-const PUBLIC_ROUTES = new Set(["login", "register"]);
+const PUBLIC_ROUTES = new Set(["home", "login", "register"]);
+
+// Role-based route permissions
+const ROLE_ROUTES = {
+  admin: ["manager-dashboard", "products", "product-detail", "product-form", "stock", "suppliers", "supplier-detail", "supplier-form", "reorder-dashboard", "orders", "order-detail", "reports", "billing", "invoice-detail", "settings"],
+  manager: ["manager-dashboard", "products", "product-detail", "product-form", "stock", "suppliers", "supplier-detail", "supplier-form", "reorder-dashboard", "orders", "order-detail", "reports", "billing", "invoice-detail", "settings"],
+  staff: ["pos", "orders", "order-detail", "billing", "invoice-detail"],
+  purchasing: ["purchasing-dashboard", "suppliers", "supplier-detail", "reorder-dashboard", "stock"],
+};
+
+// Default dashboard per role
+const ROLE_DASHBOARDS = {
+  admin: "manager-dashboard",
+  manager: "manager-dashboard",
+  staff: "pos",
+  purchasing: "purchasing-dashboard",
+};
 
 // ============================================================================
 // STATE
@@ -14,6 +30,35 @@ const routes = new Map();
 let appRoot = null;
 let currentCleanup = null;
 let currentRoute = null;
+
+// ============================================================================
+// ROLE HELPERS
+// ============================================================================
+function getUserRole() {
+  const state = getState();
+  return state.user?.role || "staff";
+}
+
+function getDefaultDashboard() {
+  const role = getUserRole();
+  return ROLE_DASHBOARDS[role] || "pos";
+}
+
+function canAccessRoute(route) {
+  const role = getUserRole();
+  const allowedRoutes = ROLE_ROUTES[role] || ROLE_ROUTES.staff;
+  return allowedRoutes.includes(route);
+}
+
+function getRoleName(role) {
+  const names = {
+    admin: "Store Manager",
+    manager: "Store Manager",
+    staff: "Staff",
+    purchasing: "Purchasing Agent",
+  };
+  return names[role] || "Staff";
+}
 
 // ============================================================================
 // ROUTING
@@ -34,10 +79,19 @@ function navigate(page) {
     return;
   }
 
-  // Redirect to dashboard if authenticated and trying to access login
-  if (hasSession && page === "login") {
-    currentRoute = "dashboard";
-    persistLastRoute("dashboard");
+  // Redirect to role-specific dashboard if authenticated and trying to access login/home
+  if (hasSession && (page === "login" || page === "home")) {
+    currentRoute = getDefaultDashboard();
+    persistLastRoute(currentRoute);
+    renderPage();
+    return;
+  }
+
+  // Check role-based access
+  if (hasSession && !isPublic && !canAccessRoute(page)) {
+    console.warn(`Access denied to route: ${page}`);
+    currentRoute = getDefaultDashboard();
+    persistLastRoute(currentRoute);
     renderPage();
     return;
   }
@@ -51,9 +105,13 @@ function resolveInitialRoute() {
   const state = getState();
   const stored = getLastRoute();
   if (state.token) {
-    return stored && stored !== "login" ? stored : "dashboard";
+    // Check if stored route is accessible
+    if (stored && !PUBLIC_ROUTES.has(stored) && canAccessRoute(stored)) {
+      return stored;
+    }
+    return getDefaultDashboard();
   }
-  return "login";
+  return "home";
 }
 
 function getLastRoute() {
@@ -87,7 +145,7 @@ function renderPage() {
   const state = getState();
   const isPublic = PUBLIC_ROUTES.has(currentRoute);
 
-  // Render full-page layout for public routes (login, register)
+  // Render full-page layout for public routes (login, register, home)
   if (isPublic) {
     renderPublicPage();
   } else {
@@ -122,8 +180,10 @@ function renderPublicPage() {
 }
 
 function renderAuthenticatedPage(state) {
-  // Render app shell with sidebar
-  appRoot.innerHTML = renderAppShell(state);
+  const role = getUserRole();
+  
+  // Render app shell with role-specific sidebar
+  appRoot.innerHTML = renderAppShell(state, role);
 
   // Render page content into outlet
   const outlet = appRoot.querySelector("[data-page-outlet]");
@@ -157,9 +217,13 @@ function renderAuthenticatedPage(state) {
   }
 }
 
-function renderAppShell(state) {
+function renderAppShell(state, role) {
   const user = state.user || {};
   const initials = computeInitials(user.name);
+  const roleName = getRoleName(role);
+  
+  // Get role-specific navigation
+  const navItems = getNavItemsForRole(role);
 
   return `
     <div class="relative flex min-h-screen w-full">
@@ -174,40 +238,12 @@ function renderAppShell(state) {
               </div>
               <div class="flex flex-col">
                 <h1 class="text-text-primary-light dark:text-text-primary-dark text-base font-bold leading-tight">Grocery MS</h1>
-                <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-normal">Management System</p>
+                <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-normal">${roleName}</p>
               </div>
             </div>
             
             <nav class="flex flex-col gap-1 mt-2">
-              <button data-route="dashboard" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">dashboard</span>
-                <span class="text-sm font-medium">Dashboard</span>
-              </button>
-              <button data-route="products" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">inventory_2</span>
-                <span class="text-sm font-medium">Products</span>
-              </button>
-              <button data-route="stock" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">monitoring</span>
-                <span class="text-sm font-medium">Stock Levels</span>
-              </button>
-              <button data-route="suppliers" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">domain</span>
-                <span class="text-sm font-medium">Suppliers</span>
-              </button>
-              <button data-route="orders" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">receipt_long</span>
-                <span class="text-sm font-medium">Orders</span>
-              </button>
-              <button data-route="cart" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">shopping_cart</span>
-                <span class="text-sm font-medium">Cart</span>
-                <span data-cart-count class="ml-auto flex items-center justify-center text-xs font-bold text-white bg-primary rounded-full h-5 min-w-[20px] px-1 hidden">0</span>
-              </button>
-              <button data-route="reports" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-xl">bar_chart</span>
-                <span class="text-sm font-medium">Reports</span>
-              </button>
+              ${navItems}
             </nav>
           </div>
           
@@ -233,6 +269,10 @@ function renderAppShell(state) {
             <h2 data-page-title class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark capitalize">${formatTitle(currentRoute)}</h2>
           </div>
           <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
+              <span class="w-2 h-2 bg-primary rounded-full"></span>
+              <span class="text-xs font-medium text-primary">${roleName}</span>
+            </div>
             <button class="flex items-center justify-center w-10 h-10 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors">
               <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">notifications</span>
             </button>
@@ -254,13 +294,56 @@ function renderAppShell(state) {
   `;
 }
 
+function getNavItemsForRole(role) {
+  const navConfigs = {
+    admin: [
+      { route: "manager-dashboard", icon: "dashboard", label: "Dashboard" },
+      { route: "products", icon: "inventory_2", label: "Products" },
+      { route: "stock", icon: "monitoring", label: "Stock Levels" },
+      { route: "suppliers", icon: "domain", label: "Suppliers" },
+      { route: "orders", icon: "receipt_long", label: "Orders" },
+      { route: "billing", icon: "request_quote", label: "Billing" },
+      { route: "reports", icon: "bar_chart", label: "Reports" },
+    ],
+    manager: [
+      { route: "manager-dashboard", icon: "dashboard", label: "Dashboard" },
+      { route: "products", icon: "inventory_2", label: "Products" },
+      { route: "stock", icon: "monitoring", label: "Stock Levels" },
+      { route: "suppliers", icon: "domain", label: "Suppliers" },
+      { route: "orders", icon: "receipt_long", label: "Orders" },
+      { route: "billing", icon: "request_quote", label: "Billing" },
+      { route: "reports", icon: "bar_chart", label: "Reports" },
+    ],
+    staff: [
+      { route: "pos", icon: "point_of_sale", label: "Point of Sale" },
+      { route: "orders", icon: "receipt_long", label: "Orders" },
+      { route: "billing", icon: "request_quote", label: "Billing" },
+    ],
+    purchasing: [
+      { route: "purchasing-dashboard", icon: "dashboard", label: "Dashboard" },
+      { route: "suppliers", icon: "domain", label: "Suppliers" },
+      { route: "reorder-dashboard", icon: "shopping_cart", label: "Reorder" },
+      { route: "stock", icon: "monitoring", label: "Stock Levels" },
+    ],
+  };
+
+  const items = navConfigs[role] || navConfigs.staff;
+  
+  return items.map(item => `
+    <button data-route="${item.route}" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-xl">${item.icon}</span>
+      <span class="text-sm font-medium">${item.label}</span>
+    </button>
+  `).join("");
+}
+
 function renderNotFound() {
   return `
     <div class="flex flex-col items-center justify-center min-h-[400px] text-center">
       <span class="material-symbols-outlined text-6xl text-text-secondary-light dark:text-text-secondary-dark mb-4">search_off</span>
       <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">Page Not Found</h2>
       <p class="text-text-secondary-light dark:text-text-secondary-dark mb-6">The page you're looking for doesn't exist.</p>
-      <button data-route="dashboard" class="px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors">
+      <button data-route="${getDefaultDashboard()}" class="px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors">
         Go to Dashboard
       </button>
     </div>
@@ -293,7 +376,13 @@ function updateNavState() {
 
 function formatTitle(route) {
   if (!route) return "Dashboard";
-  return route
+  const titles = {
+    "manager-dashboard": "Dashboard",
+    "pos": "Point of Sale",
+    "purchasing-dashboard": "Purchasing Dashboard",
+    "reorder-dashboard": "Reorder Dashboard",
+  };
+  return titles[route] || route
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
@@ -338,14 +427,14 @@ async function handleLogout() {
   } catch (error) {
     console.warn("Logout error:", error);
   } finally {
-    persistLastRoute("login");
-    currentRoute = "login";
+    persistLastRoute("home");
+    currentRoute = "home";
     renderPage();
   }
 }
 
 // ============================================================================
-// CART STATE SYNC
+// CART STATE SYNC (for POS)
 // ============================================================================
 function syncCartBadge(state) {
   const badge = appRoot?.querySelector("[data-cart-count]");
@@ -381,7 +470,7 @@ function bootstrap() {
   });
 
   // Expose for debugging
-  window.gmsRouter = { navigate, getState, subscribe };
+  window.gmsRouter = { navigate, getState, subscribe, getUserRole };
 }
 
 bootstrap();

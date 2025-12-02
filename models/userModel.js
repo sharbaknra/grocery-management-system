@@ -26,40 +26,28 @@ const User = {
     return rows;
   },
 
-  // Seed admin and staff default users (idempotent)
+  // Seed default users (idempotent)
   seedAdmin: async () => {
-    const adminEmail = 'admin@grocery.com';
-    const adminPassword = 'admin123';
-    const staffEmail = 'staff@grocery.com';
-    const staffPassword = 'staff123';
+    const defaultUsers = [
+      { name: 'Store Manager', email: 'admin@grocery.com', password: 'admin123', role: 'admin' },
+      { name: 'Staff Member', email: 'staff@grocery.com', password: 'staff123', role: 'staff' },
+      { name: 'Purchasing Agent', email: 'purchasing@grocery.com', password: 'purchasing123', role: 'purchasing' },
+    ];
 
     try {
-      // Check if admin already exists
-      const [existingAdmin] = await db.promise().query('SELECT * FROM users WHERE email = ?', [adminEmail]);
-      
-      if (existingAdmin.length === 0) {
-        const hashedPassword = await bcrypt.hash(adminPassword, 10);
-        await db.promise().query(
-          'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-          ['Admin', adminEmail, hashedPassword, 'admin']
-        );
-        console.log('✅ Default admin created:', adminEmail);
-      } else {
-        console.log('ℹ️ Admin already exists:', adminEmail);
-      }
-
-      // Check if staff already exists
-      const [existingStaff] = await db.promise().query('SELECT * FROM users WHERE email = ?', [staffEmail]);
-
-      if (existingStaff.length === 0) {
-        const hashedStaffPassword = await bcrypt.hash(staffPassword, 10);
-        await db.promise().query(
-          'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-          ['Staff Member', staffEmail, hashedStaffPassword, 'staff']
-        );
-        console.log('✅ Default staff created:', staffEmail);
-      } else {
-        console.log('ℹ️ Staff already exists:', staffEmail);
+      for (const user of defaultUsers) {
+        const [existing] = await db.promise().query('SELECT * FROM users WHERE email = ?', [user.email]);
+        
+        if (existing.length === 0) {
+          const hashedPassword = await bcrypt.hash(user.password, 10);
+          await db.promise().query(
+            'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+            [user.name, user.email, hashedPassword, user.role]
+          );
+          console.log(`✅ Default ${user.role} created:`, user.email);
+        } else {
+          console.log(`ℹ️ ${user.role} already exists:`, user.email);
+        }
       }
     } catch (err) {
       console.error('❌ Error seeding default users:', err);

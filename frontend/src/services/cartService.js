@@ -6,8 +6,8 @@ export const cartService = {
     return fetchAndStoreCart();
   },
 
-  async addItem(payload) {
-    await apiClient.post("/orders/cart/add", payload);
+  async addItem(productId, quantity = 1) {
+    await apiClient.post("/orders/cart/add", { productId, quantity });
     return fetchAndStoreCart();
   },
 

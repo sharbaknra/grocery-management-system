@@ -2,24 +2,28 @@ import { reportsService } from "../../services/reportsService.js";
 import { stockService } from "../../services/stockService.js";
 import { ordersService } from "../../services/ordersService.js";
 
-export function registerDashboardPage(register) {
-  register("dashboard", dashboardPage);
+export function registerManagerDashboard(register) {
+  register("manager-dashboard", managerDashboard);
 }
 
-function dashboardPage() {
+function managerDashboard() {
   return {
     html: `
       <div class="max-w-7xl mx-auto space-y-6">
         <!-- Page Header -->
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 class="text-3xl font-black tracking-tight text-text-primary-light dark:text-text-primary-dark">Dashboard</h1>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark mt-1">Welcome! Here's what's happening at your store today.</p>
+            <h1 class="text-3xl font-black tracking-tight text-text-primary-light dark:text-text-primary-dark">Store Manager Dashboard</h1>
+            <p class="text-text-secondary-light dark:text-text-secondary-dark mt-1">Overview of store operations, inventory, and sales performance.</p>
           </div>
           <div class="flex gap-3">
             <button data-route="products" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors">
               <span class="material-symbols-outlined text-lg">add</span>
               Add Product
+            </button>
+            <button data-route="reports" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark text-text-primary-light dark:text-text-primary-dark font-medium hover:bg-background-light dark:hover:bg-background-dark transition-colors">
+              <span class="material-symbols-outlined text-lg">bar_chart</span>
+              View Reports
             </button>
           </div>
         </div>
@@ -34,7 +38,7 @@ function dashboardPage() {
               </div>
               <span class="flex items-center gap-1 text-xs font-medium text-success">
                 <span class="material-symbols-outlined text-sm">trending_up</span>
-                +12%
+                Today
               </span>
             </div>
             <div class="mt-4">
@@ -51,7 +55,7 @@ function dashboardPage() {
               </div>
               <span class="flex items-center gap-1 text-xs font-medium text-success">
                 <span class="material-symbols-outlined text-sm">trending_up</span>
-                +8%
+                Total
               </span>
             </div>
             <div class="mt-4">
@@ -96,7 +100,10 @@ function dashboardPage() {
           <!-- Low Stock Alert -->
           <div class="lg:col-span-2 bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b border-border-light dark:border-border-dark">
-              <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Low Stock Alert</h3>
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-warning">warning</span>
+                <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Low Stock Alert</h3>
+              </div>
               <button data-route="stock" class="text-sm font-medium text-primary hover:underline">View All</button>
             </div>
             <div class="overflow-x-auto">
@@ -138,8 +145,8 @@ function dashboardPage() {
         
         <!-- Quick Actions -->
         <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-6">
-          <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-4">Quick Actions</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-4">Manager Quick Actions</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
             <button data-route="product-form" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors group">
               <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">add_box</span>
               <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">New Product</span>
@@ -148,13 +155,21 @@ function dashboardPage() {
               <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">sync</span>
               <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Update Stock</span>
             </button>
-            <button data-route="cart" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors group">
-              <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">point_of_sale</span>
-              <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">New Sale</span>
+            <button data-route="products" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors group">
+              <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">edit</span>
+              <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Edit Prices</span>
+            </button>
+            <button data-route="suppliers" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors group">
+              <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">domain</span>
+              <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Suppliers</span>
             </button>
             <button data-route="reports" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors group">
               <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">analytics</span>
               <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">View Reports</span>
+            </button>
+            <button data-route="orders" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-background-light dark:bg-background-dark hover:bg-primary/10 transition-colors group">
+              <span class="material-symbols-outlined text-3xl text-text-secondary-light dark:text-text-secondary-dark group-hover:text-primary">receipt_long</span>
+              <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">All Orders</span>
             </button>
           </div>
         </div>
@@ -181,7 +196,6 @@ function dashboardPage() {
         // Update low stock count and table
         if (lowStockData.status === "fulfilled") {
           const response = lowStockData.value || {};
-          // Handle different response formats: { data: { items: [...] } }, { items: [...] }, or [...]
           const lowStock = Array.isArray(response) ? response : (response.data?.items || response.items || response.data || []);
           updateKPI("lowStock", Array.isArray(lowStock) ? lowStock.length : 0);
           renderLowStockTable(Array.isArray(lowStock) ? lowStock.slice(0, 5) : []);
@@ -296,3 +310,4 @@ function renderRecentOrders(orders) {
     })
     .join("");
 }
+

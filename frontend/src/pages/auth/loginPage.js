@@ -174,10 +174,20 @@ function loginPage() {
         try {
           toggleLoading(true);
           setStatus("Signing in…", "info");
-          await authService.login(credentials);
+          const result = await authService.login(credentials);
           await cartService.getCart().catch(() => {});
           setStatus("Success! Redirecting…", "success");
-          setTimeout(() => navigate("dashboard"), 500);
+          
+          // Redirect based on role
+          const role = result?.user?.role || "staff";
+          const dashboards = {
+            admin: "manager-dashboard",
+            manager: "manager-dashboard",
+            staff: "pos",
+            purchasing: "purchasing-dashboard",
+          };
+          const targetDashboard = dashboards[role] || "pos";
+          setTimeout(() => navigate(targetDashboard), 500);
         } catch (error) {
           console.error("Login failed:", error);
           const message = error?.message || "Invalid email or password. Please try again.";

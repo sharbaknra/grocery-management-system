@@ -104,6 +104,21 @@ Each subsection lists the governing files, endpoints, allowed roles, and notable
 - **Stock Movements:** Audit entries referencing `product_id` and `user_id`.
 - **Cart:** Stores pending selections keyed by `user_id`, enabling persistent carts per authenticated user.
 
+### 8. Billing & Invoices (Module 2.8.5)
+
+- **Files:** `frontend/src/services/billingService.js`, `frontend/src/pages/billing/billingPage.js`, `frontend/src/pages/billing/invoiceDetailPage.js`.
+- **Access:** Admin, Manager, Cashier, Staff.
+- **Features:**
+  - View all invoices with summary cards (Total Revenue, Total Invoices, Completed, Pending)
+  - Filter by status (Completed, Pending, Cancelled) and date range (Today, Week, Month, Year)
+  - Search by invoice number or customer name
+  - View detailed invoice with line items, subtotal, tax, discount, and total
+  - Print invoice with print-optimized layout
+  - Export invoices to CSV
+- **Invoice Number Format:** `INV-YYYYMM-XXXXX` (e.g., `INV-202511-00001`)
+- **Data Source:** Uses existing `/api/orders` endpoints for order data and `/api/orders/:id/items` for line items.
+- **Frontend Notes:** Invoice generation uses order data with formatted invoice numbers. Print functionality uses CSS print media queries for clean output.
+
 ## Frontend Coverage Matrix (What Needs a Page/Component)
 
 | Domain | Key Views | Required API Hooks |
@@ -115,6 +130,7 @@ Each subsection lists the governing files, endpoints, allowed roles, and notable
 | Suppliers | Directory, detail, reorder dashboard | `/api/suppliers*` |
 | Cart & Checkout | Cart drawer/page, checkout form | `/api/orders/cart/*`, `/api/orders/checkout` |
 | Orders | Staff order board, customer history, order detail | `/api/orders*` |
+| Billing | Invoice list, invoice detail, print, export | `/api/orders*` |
 | Reports | Sales/inventory/product analytics, exports | `/api/reports/*` |
 | Items (Legacy) | Simple catalog admin | `/api/items` |
 

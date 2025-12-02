@@ -1,5 +1,6 @@
 import { productsService } from "../../services/productsService.js";
 import { cartService } from "../../services/cartService.js";
+import { getImageUrl } from "../../services/apiClient.js";
 
 export function registerProductDetailPage(register) {
   register("product-detail", productDetailPage);
@@ -220,7 +221,7 @@ function renderProduct(product) {
   // Image
   const imageEl = document.querySelector("[data-product-image]");
   if (imageEl) {
-    const imageUrl = product.image_url || product.image || "https://via.placeholder.com/800x400?text=No+Image";
+    const imageUrl = getImageUrl(product.image_url || product.image);
     imageEl.style.backgroundImage = `url('${imageUrl}')`;
   }
 

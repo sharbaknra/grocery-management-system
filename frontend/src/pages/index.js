@@ -1,8 +1,16 @@
+// Home/Landing page
+import { registerHomePage } from "./home/homePage.js";
+
 // Auth pages
 import { registerLoginPage } from "./auth/loginPage.js";
 import { registerRegisterPage } from "./auth/registerPage.js";
 
-// Dashboard
+// Role-based Dashboards
+import { registerManagerDashboard } from "./manager/managerDashboard.js";
+import { registerPosPage } from "./cashier/posPage.js";
+import { registerPurchasingDashboard } from "./purchasing/purchasingDashboard.js";
+
+// Legacy Dashboard (kept for compatibility)
 import { registerDashboardPage } from "./dashboard/overviewPage.js";
 
 // Products
@@ -13,7 +21,7 @@ import { registerProductFormPage } from "./products/formPage.js";
 // Stock
 import { registerStockLevelsPage } from "./stock/levelsPage.js";
 
-// Cart & Checkout
+// Cart & Checkout (used by POS)
 import { registerCartPage } from "./cart/cartPage.js";
 import { registerCheckoutPage } from "./checkout/checkoutPage.js";
 
@@ -30,6 +38,10 @@ import { registerOrderDetailPage } from "./orders/detailPage.js";
 // Reports
 import { registerReportsPage } from "./reports/reportsPage.js";
 
+// Billing (Module 2.8.5)
+import { registerBillingPage } from "./billing/billingPage.js";
+import { registerInvoiceDetailPage } from "./billing/invoiceDetailPage.js";
+
 // Settings
 import { registerSettingsPage } from "./settings/settingsPage.js";
 
@@ -37,11 +49,19 @@ import { registerSettingsPage } from "./settings/settingsPage.js";
  * Register all page modules with the router
  */
 export function registerPages(register) {
+  // Home
+  registerHomePage(register);
+
   // Auth
   registerLoginPage(register);
   registerRegisterPage(register);
 
-  // Dashboard
+  // Role-based Dashboards
+  registerManagerDashboard(register);     // manager-dashboard
+  registerPosPage(register);               // pos (for cashiers)
+  registerPurchasingDashboard(register);   // purchasing-dashboard
+
+  // Legacy Dashboard
   registerDashboardPage(register);
 
   // Products
@@ -68,6 +88,10 @@ export function registerPages(register) {
 
   // Reports
   registerReportsPage(register);
+
+  // Billing (Module 2.8.5)
+  registerBillingPage(register);
+  registerInvoiceDetailPage(register);
 
   // Settings
   registerSettingsPage(register);

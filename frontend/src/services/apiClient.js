@@ -1,5 +1,22 @@
 const DEFAULT_BASE_URL = "http://localhost:5000/api";
 const API_BASE_URL = window.__GMS_API_BASE__ || DEFAULT_BASE_URL;
+const UPLOADS_BASE_URL = API_BASE_URL.replace("/api", "/uploads");
+
+/**
+ * Get the full URL for an uploaded image
+ * @param {string} filename - The image filename stored in the database
+ * @returns {string} Full URL to the image or placeholder if no filename
+ */
+export function getImageUrl(filename) {
+  if (!filename) {
+    return "https://via.placeholder.com/300x200?text=No+Image";
+  }
+  // If it's already a full URL, return as-is
+  if (filename.startsWith("http://") || filename.startsWith("https://")) {
+    return filename;
+  }
+  return `${UPLOADS_BASE_URL}/${filename}`;
+}
 
 let authTokenProvider = () => null;
 

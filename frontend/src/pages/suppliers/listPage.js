@@ -93,8 +93,9 @@ function suppliersListPage() {
       async function loadSuppliers(searchTerm = "") {
         try {
           renderLoading();
-          const suppliers = await suppliersService.list({ search: searchTerm });
-          allSuppliers = Array.isArray(suppliers) ? suppliers : suppliers.suppliers || [];
+          const response = await suppliersService.list({ search: searchTerm });
+          // Handle different response formats: { data: [...] }, { suppliers: [...] }, or [...]
+          allSuppliers = Array.isArray(response) ? response : (response.data || response.suppliers || []);
           renderSuppliers(allSuppliers);
         } catch (error) {
           console.error("Failed to load suppliers:", error);
@@ -153,7 +154,7 @@ function suppliersListPage() {
               <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${supplier.name}</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${supplier.contact_person || "-"}</span>
+              <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${supplier.contact_name || supplier.contact_person || "-"}</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${supplier.phone || "-"}</span>

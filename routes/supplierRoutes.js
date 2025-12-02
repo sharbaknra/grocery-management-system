@@ -9,49 +9,49 @@ const allowRoles = require("../middleware/roleMiddleware");
 router.post(
   "/",
   verifyToken,
-  allowRoles("admin"),
+  allowRoles("admin", "manager"),
   supplierController.createSupplier
 );
 
 router.get(
   "/",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "manager", "staff", "purchasing"),
   supplierController.getSuppliers
 );
 
 router.get(
   "/reorder",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "manager", "staff", "purchasing"),
   supplierController.getReorderDashboard
 );
 
 router.get(
   "/:id",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "manager", "staff", "purchasing"),
   supplierController.getSupplierById
 );
 
 router.put(
   "/:id",
   verifyToken,
-  allowRoles("admin"),
+  allowRoles("admin", "manager"),
   supplierController.updateSupplier
 );
 
 router.delete(
   "/:id",
   verifyToken,
-  allowRoles("admin"),
+  allowRoles("admin", "manager"),
   supplierController.deleteSupplier
 );
 
 router.get(
   "/:id/reorder",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "manager", "staff", "purchasing"),
   supplierController.getSupplierReorderSheet
 );
 
