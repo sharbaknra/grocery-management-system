@@ -34,11 +34,11 @@ export const reportsService = {
   getCategorySales() {
     return apiClient.get("/reports/products/category-sales");
   },
-  exportCsv(type) {
-    return apiClient.get("/reports/export/csv", { query: { type } });
+  exportCsv(type, extraParams = {}) {
+    return apiClient.get("/reports/export/csv", { query: { type, ...extraParams } });
   },
-  exportPdf(type) {
-    return apiClient.get("/reports/export/pdf", { query: { type } });
+  exportPdf(type, extraParams = {}) {
+    return apiClient.get("/reports/export/pdf", { query: { type, ...extraParams } });
   },
 };
 

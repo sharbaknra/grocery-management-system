@@ -239,25 +239,39 @@ function productFormPage() {
       }
 
       // Load suppliers
+      const supplierSelect = document.getElementById("supplier_id");
+      let supplierOptions = [];
       try {
-        const suppliers = await suppliersService.list();
-        const supplierSelect = document.getElementById("supplier_id");
-        if (supplierSelect && suppliers.length) {
-          suppliers.forEach((supplier) => {
+        const response = await suppliersService.list();
+        supplierOptions = response?.data ?? response ?? [];
+
+        if (supplierSelect && supplierOptions.length) {
+          supplierOptions.forEach((supplier) => {
             const option = document.createElement("option");
             option.value = supplier.id;
             option.textContent = supplier.name;
             supplierSelect.appendChild(option);
           });
+
+          const preselectedSupplierId = sessionStorage.getItem("gms:preselectedSupplierId");
+          if (preselectedSupplierId) {
+            supplierSelect.value = preselectedSupplierId;
+          } else if (!isEditMode) {
+            supplierSelect.value = supplierOptions[0].id;
+          }
         }
       } catch (error) {
         console.error("Failed to load suppliers:", error);
+        if (supplierSelect) {
+          supplierSelect.innerHTML = `<option value="">No suppliers found</option>`;
+        }
       }
 
       // Load product for edit mode
       if (isEditMode) {
         try {
-          const product = await productsService.getById(productId);
+          const response = await productsService.getById(productId);
+          const product = response?.data ?? response;
           populateForm(product);
         } catch (error) {
           console.error("Failed to load product:", error);
@@ -402,6 +416,7 @@ function productFormPage() {
 
       return () => {
         sessionStorage.removeItem("gms:activeProductId");
+        sessionStorage.removeItem("gms:preselectedSupplierId");
       };
     },
   };

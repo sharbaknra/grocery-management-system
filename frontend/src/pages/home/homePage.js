@@ -71,9 +71,9 @@ function homePage() {
             
             <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               <!-- Store Manager -->
-              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-primary p-8 transition-all hover:shadow-2xl hover:-translate-y-1">
+              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-primary p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full"></div>
-                <div class="relative">
+                <div class="relative flex flex-col flex-1">
                   <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-hover rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-white">admin_panel_settings</span>
                   </div>
@@ -102,7 +102,7 @@ function homePage() {
                   <button 
                     data-route="login" 
                     data-route-params='{"role":"manager"}'
-                    class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors">
+                    class="w-full mt-auto flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors">
                     <span>Manager Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>
@@ -110,9 +110,9 @@ function homePage() {
               </div>
               
               <!-- Staff -->
-              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-accent p-8 transition-all hover:shadow-2xl hover:-translate-y-1">
+              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-accent p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full"></div>
-                <div class="relative">
+                <div class="relative flex flex-col flex-1">
                   <div class="w-16 h-16 bg-gradient-to-br from-accent to-amber-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-white">point_of_sale</span>
                   </div>
@@ -141,7 +141,7 @@ function homePage() {
                   <button 
                     data-route="login" 
                     data-route-params='{"role":"staff"}'
-                    class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white font-bold rounded-xl hover:bg-amber-500 transition-colors">
+                    class="w-full mt-auto flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white font-bold rounded-xl hover:bg-amber-500 transition-colors">
                     <span>Staff Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>
@@ -149,9 +149,9 @@ function homePage() {
               </div>
               
               <!-- Purchasing Agent -->
-              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-secondary p-8 transition-all hover:shadow-2xl hover:-translate-y-1">
+              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-secondary p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-full"></div>
-                <div class="relative">
+                <div class="relative flex flex-col flex-1">
                   <div class="w-16 h-16 bg-gradient-to-br from-secondary to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-white">local_shipping</span>
                   </div>
@@ -180,7 +180,7 @@ function homePage() {
                   <button 
                     data-route="login" 
                     data-route-params='{"role":"purchasing"}'
-                    class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:bg-green-600 transition-colors">
+                    class="w-full mt-auto flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:bg-green-600 transition-colors">
                     <span>Purchasing Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>

@@ -1,5 +1,4 @@
 import { productsService } from "../../services/productsService.js";
-import { cartService } from "../../services/cartService.js";
 import { getImageUrl } from "../../services/apiClient.js";
 
 export function registerProductsListPage(register) {
@@ -169,28 +168,7 @@ function productsListPage() {
           });
         });
 
-        productsGrid.querySelectorAll("[data-add-to-cart]").forEach((btn) => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.addToCart;
-            try {
-              btn.disabled = true;
-              btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">sync</span>';
-              await cartService.addItem({ product_id: parseInt(id), quantity: 1 });
-              btn.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> Added';
-              setTimeout(() => {
-                btn.innerHTML = '<span class="material-symbols-outlined text-sm">add_shopping_cart</span>';
-                btn.disabled = false;
-              }, 1500);
-            } catch (error) {
-              console.error("Failed to add to cart:", error);
-              btn.innerHTML = '<span class="material-symbols-outlined text-sm">error</span>';
-              setTimeout(() => {
-                btn.innerHTML = '<span class="material-symbols-outlined text-sm">add_shopping_cart</span>';
-                btn.disabled = false;
-              }, 1500);
-            }
-          });
-        });
+        // No add-to-cart button for manager/admin views.
       }
 
       function renderProductCard(product) {
@@ -229,26 +207,20 @@ function productsListPage() {
             </div>
             
             <!-- Actions -->
-            <div class="grid grid-cols-3 gap-2 border-t border-border-light dark:border-border-dark p-3">
+            <div class="flex gap-2 border-t border-border-light dark:border-border-dark p-3">
               <button 
                 data-view-product="${product.id}"
-                class="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-background-light dark:bg-background-dark text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium hover:bg-border-light dark:hover:bg-border-dark transition-colors"
+                class="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-lg bg-background-light dark:bg-background-dark text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium hover:bg-border-light dark:hover:bg-border-dark transition-colors"
               >
                 <span class="material-symbols-outlined text-base">visibility</span>
                 View
               </button>
               <button 
                 data-edit-product="${product.id}"
-                class="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
+                class="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-hover transition-colors"
               >
                 <span class="material-symbols-outlined text-base">edit</span>
                 Edit
-              </button>
-              <button 
-                data-add-to-cart="${product.id}"
-                class="flex items-center justify-center gap-1.5 h-9 rounded-lg bg-success/10 text-success text-sm font-medium hover:bg-success/20 transition-colors"
-              >
-                <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
               </button>
             </div>
           </div>

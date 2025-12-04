@@ -200,10 +200,19 @@ function supplierDetailPage() {
 
       try {
         showLoading();
-        const supplier = await suppliersService.getById(supplierId);
-        renderSupplier(supplier);
+        const response = await suppliersService.getById(supplierId);
+        const payload = response?.data ?? response;
+        const supplierDetails = payload?.supplier ?? payload;
+        const products = payload?.products ?? [];
+        const enrichedSupplier = {
+          ...supplierDetails,
+          products,
+          order_history: payload?.order_history ?? [],
+        };
+
+        renderSupplier(enrichedSupplier);
         showContent();
-        attachEventHandlers(supplier, navigate);
+        attachEventHandlers(enrichedSupplier, navigate);
       } catch (error) {
         console.error("Failed to load supplier:", error);
         showError(error.message || "Failed to load supplier details");
@@ -219,7 +228,7 @@ function renderSupplier(supplier) {
   setText("[data-supplier-id]", `Supplier ID: #S${supplier.id}`);
 
   // Contact Info
-  setText("[data-contact-person]", supplier.contact_person || "-");
+  setText("[data-contact-person]", supplier.contact_person || supplier.contact_name || "-");
   setText("[data-phone]", supplier.phone || "-");
   setText("[data-email]", supplier.email || "-");
   
@@ -253,7 +262,8 @@ function renderSupplier(supplier) {
   }
 
   // Stats
-  setText("[data-total-products]", supplier.product_count || 0);
+  const productCount = supplier.product_count ?? supplier.products?.length ?? 0;
+  setText("[data-total-products]", productCount);
   setText("[data-total-orders]", supplier.order_count || 0);
   setText("[data-last-order]", supplier.last_order_date ? formatDate(supplier.last_order_date) : "-");
 
@@ -281,22 +291,29 @@ function renderProducts(products) {
     return;
   }
 
-  tbody.innerHTML = products.map((product) => `
+  tbody.innerHTML = products.map((product) => {
+    const name = product.name || product.product_name || "Unnamed Product";
+    const category = product.category || "-";
+    const stock = product.stock_quantity ?? product.quantity ?? 0;
+    const priceValue = product.price ?? product.unit_price ?? 0;
+
+    return `
     <tr class="hover:bg-background-light dark:hover:bg-background-dark transition-colors">
       <td class="px-6 py-4 whitespace-nowrap">
-        <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${product.name}</span>
+        <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${name}</span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap">
-        <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${product.category || "-"}</span>
+        <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${category}</span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-center">
-        <span class="text-sm text-text-primary-light dark:text-text-primary-dark">${product.stock_quantity || 0}</span>
+        <span class="text-sm text-text-primary-light dark:text-text-primary-dark">${stock}</span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-right">
-        <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Rs. ${parseFloat(product.price || 0).toLocaleString('en-PK')}</span>
+        <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Rs. ${parseFloat(priceValue).toLocaleString('en-PK')}</span>
       </td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
 }
 
 function attachEventHandlers(supplier, navigate) {

@@ -1,5 +1,6 @@
 import { reportsService } from "../../services/reportsService.js";
 import { getState } from "../../state/appState.js";
+import { apiClient } from "../../services/apiClient.js";
 
 export function registerReportsPage(register) {
   register("reports", reportsPage);
@@ -205,7 +206,9 @@ function reportsPage() {
 
       function renderInventoryReport(data) {
         if (!outputEl) return;
-        const items = Array.isArray(data) ? data : data.items || [];
+        const items = Array.isArray(data)
+          ? data
+          : data.items || data.data?.items || [];
 
         outputEl.innerHTML = `
           <h3 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6">Inventory Status</h3>
@@ -410,20 +413,84 @@ function reportsPage() {
       generateBtn?.addEventListener("click", generateReport);
 
       // Export buttons
-      document.querySelector("[data-export-csv]")?.addEventListener("click", () => {
+      document.querySelector("[data-export-csv]")?.addEventListener("click", async () => {
         if (!currentReportData) {
           alert("Please generate a report first.");
           return;
         }
-        alert("CSV export would be implemented here with the current report data.");
+        try {
+          const { type, params } = getExportConfig(currentReportType, startDateInput, endDateInput);
+          const apiOrigin = getApiOrigin();
+          const url = new URL("/api/reports/export/csv", apiOrigin);
+          url.searchParams.set("type", type);
+          Object.entries(params || {}).forEach(([key, value]) => {
+            if (value) url.searchParams.set(key, value);
+          });
+
+          const res = await fetch(url.toString(), {
+            headers: {
+              Authorization: `Bearer ${getState().token}`,
+            },
+          });
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText || "Failed to export CSV");
+          }
+          const blob = await res.blob();
+          const disposition = res.headers.get("Content-Disposition") || "";
+          const match = disposition.match(/filename="(.+?)"/);
+          const filename = match ? match[1] : `report-${currentReportType}.csv`;
+
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } catch (error) {
+          console.error("CSV export failed:", error);
+          alert(error.message || "Failed to export CSV. Please try again.");
+        }
       });
 
-      document.querySelector("[data-export-pdf]")?.addEventListener("click", () => {
+      document.querySelector("[data-export-pdf]")?.addEventListener("click", async () => {
         if (!currentReportData) {
           alert("Please generate a report first.");
           return;
         }
-        alert("PDF export would be implemented here with the current report data.");
+        try {
+          const { type, params } = getExportConfig(currentReportType, startDateInput, endDateInput);
+          const apiOrigin = getApiOrigin();
+          const url = new URL("/api/reports/export/pdf", apiOrigin);
+          url.searchParams.set("type", type);
+          Object.entries(params || {}).forEach(([key, value]) => {
+            if (value) url.searchParams.set(key, value);
+          });
+
+          const res = await fetch(url.toString(), {
+            headers: {
+              Authorization: `Bearer ${getState().token}`,
+            },
+          });
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText || "Failed to export PDF");
+          }
+          const blob = await res.blob();
+          const disposition = res.headers.get("Content-Disposition") || "";
+          const match = disposition.match(/filename="(.+?)"/);
+          const filename = match ? match[1] : `report-${currentReportType}.pdf`;
+
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } catch (error) {
+          console.error("PDF export failed:", error);
+          alert(error.message || "Failed to export PDF. Please try again.");
+        }
       });
 
       // Initial report
@@ -431,6 +498,34 @@ function reportsPage() {
       await generateReport();
     },
   };
+}
+
+function getExportConfig(currentReportType, startDateInput, endDateInput) {
+  const startDate = startDateInput?.value;
+  const endDate = endDateInput?.value;
+
+  switch (currentReportType) {
+    case "sales":
+      // Use daily sales export by default for sales summary
+      return { type: "sales-daily", params: { days: 7 } };
+    case "inventory":
+      return { type: "low-stock", params: {} };
+    case "products":
+      return { type: "top-selling", params: { limit: 10 } };
+    case "expiring":
+      return { type: "expiring", params: { days: 60 } };
+    default:
+      return { type: "sales-daily", params: { days: 7 } };
+  }
+}
+
+function getApiOrigin() {
+  try {
+    const url = new URL(apiClient.baseUrl);
+    return url.origin;
+  } catch {
+    return window.location.origin;
+  }
 }
 
 function formatCurrency(amount) {
