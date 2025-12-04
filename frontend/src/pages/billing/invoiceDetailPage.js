@@ -86,8 +86,36 @@ function invoiceDetailPage() {
           billingService.getInvoiceItems(orderId),
         ]);
 
-        const order = orderResponse.order || orderResponse;
-        const items = itemsResponse.items || itemsResponse.data || itemsResponse || [];
+        // Extract order data - handle different response structures
+        const order = orderResponse.data?.order || orderResponse.order || orderResponse.data || orderResponse;
+        
+        if (!order) {
+          throw new Error("Order not found");
+        }
+        
+        // Extract items array - prefer items from order, fallback to items response
+        let items = [];
+        
+        // First, try to get items from the order object (order already includes items)
+        if (order.items && Array.isArray(order.items)) {
+          items = order.items;
+        } 
+        // Fallback to items response
+        else if (itemsResponse && itemsResponse.data && itemsResponse.data.items && Array.isArray(itemsResponse.data.items)) {
+          items = itemsResponse.data.items;
+        } else if (itemsResponse && Array.isArray(itemsResponse.data)) {
+          items = itemsResponse.data;
+        } else if (itemsResponse && Array.isArray(itemsResponse.items)) {
+          items = itemsResponse.items;
+        } else if (Array.isArray(itemsResponse)) {
+          items = itemsResponse;
+        }
+        
+        // Ensure items is always an array
+        if (!Array.isArray(items)) {
+          console.warn("Items is not an array, defaulting to empty array. Received:", typeof items, items);
+          items = [];
+        }
 
         renderInvoice(order, items);
 
@@ -117,8 +145,18 @@ function invoiceDetailPage() {
       function renderInvoice(order, items) {
         if (!container) return;
 
-        const invoiceNum = billingService.generateInvoiceNumber(order.order_id, order.created_at);
-        const subtotal = items.reduce((sum, item) => sum + (parseFloat(item.unit_price_at_sale) * item.quantity), 0);
+        // Ensure items is an array
+        if (!Array.isArray(items)) {
+          console.error("Items is not an array:", items);
+          items = [];
+        }
+
+        const invoiceNum = billingService.generateInvoiceNumber(order.order_id || order.id, order.created_at);
+        const subtotal = items.reduce((sum, item) => {
+          const price = parseFloat(item.unit_price_at_sale || item.price || 0);
+          const qty = parseInt(item.quantity || 0);
+          return sum + (price * qty);
+        }, 0);
         const tax = parseFloat(order.tax_applied) || 0;
         const discount = parseFloat(order.discount_applied) || 0;
         const total = parseFloat(order.total_price) || (subtotal + tax - discount);

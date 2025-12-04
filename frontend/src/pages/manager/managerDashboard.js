@@ -187,9 +187,10 @@ function managerDashboard() {
 
         // Update KPIs
         if (salesData.status === "fulfilled") {
-          const sales = salesData.value;
-          updateKPI("todaySales", formatCurrency(sales.todaySales || 0));
-          updateKPI("totalOrders", sales.totalOrders || 0);
+          const sales = salesData.value?.data || salesData.value || {};
+          const today = sales.today || {};
+          updateKPI("todaySales", formatCurrency(today.revenue || 0));
+          updateKPI("totalOrders", today.orders || 0);
           updateKPI("totalProducts", sales.totalProducts || 0);
         }
 
@@ -203,8 +204,9 @@ function managerDashboard() {
 
         // Update recent orders
         if (ordersData.status === "fulfilled") {
-          const orders = ordersData.value?.orders || ordersData.value || [];
-          renderRecentOrders(orders.slice(0, 5));
+          const response = ordersData.value || {};
+          const orders = Array.isArray(response) ? response : (response.data?.orders || response.orders || []);
+          renderRecentOrders(Array.isArray(orders) ? orders.slice(0, 5) : []);
         }
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
@@ -245,21 +247,34 @@ function renderLowStockTable(items) {
 
   tbody.innerHTML = items
     .map((item) => {
-      const status = item.quantity <= 0 ? "Out of Stock" : "Low Stock";
-      const statusClass = item.quantity <= 0 
+      const qty = item.quantity || item.stock_quantity || 0;
+      const min = item.min_stock_level || 10;
+      const status = qty <= 0 
+        ? "Out of Stock" 
+        : (qty < min) 
+          ? "Low Stock" 
+          : "OK";
+      const statusClass = qty <= 0 
         ? "bg-danger/10 text-danger" 
-        : "bg-warning/10 text-warning";
+        : (qty < min)
+          ? "bg-warning/10 text-warning"
+          : "bg-success/10 text-success";
+      const dotClass = qty <= 0 
+        ? "bg-danger" 
+        : (qty < min)
+          ? "bg-warning"
+          : "bg-success";
       
       return `
         <tr class="hover:bg-background-light dark:hover:bg-background-dark transition-colors">
           <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${item.name || item.product_name}</div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary-light dark:text-text-secondary-dark">${item.quantity || item.stock_quantity}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary-light dark:text-text-secondary-dark">${item.min_stock_level || 10}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary-light dark:text-text-secondary-dark">${qty}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary-light dark:text-text-secondary-dark">${min}</td>
           <td class="px-6 py-4 whitespace-nowrap">
             <span class="inline-flex items-center gap-1.5 rounded-full ${statusClass} px-2.5 py-1 text-xs font-medium">
-              <span class="w-1.5 h-1.5 rounded-full ${item.quantity <= 0 ? 'bg-danger' : 'bg-warning'}"></span>
+              <span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span>
               ${status}
             </span>
           </td>

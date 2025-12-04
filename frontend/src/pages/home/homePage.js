@@ -99,7 +99,10 @@ function homePage() {
                       Manage suppliers
                     </li>
                   </ul>
-                  <button data-route="login" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors">
+                  <button 
+                    data-route="login" 
+                    data-route-params='{"role":"manager"}'
+                    class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors">
                     <span>Manager Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>
@@ -135,7 +138,10 @@ function homePage() {
                       View order history
                     </li>
                   </ul>
-                  <button data-route="login" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white font-bold rounded-xl hover:bg-amber-500 transition-colors">
+                  <button 
+                    data-route="login" 
+                    data-route-params='{"role":"staff"}'
+                    class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white font-bold rounded-xl hover:bg-amber-500 transition-colors">
                     <span>Staff Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>
@@ -171,7 +177,10 @@ function homePage() {
                       View low-stock alerts
                     </li>
                   </ul>
-                  <button data-route="login" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:bg-green-600 transition-colors">
+                  <button 
+                    data-route="login" 
+                    data-route-params='{"role":"purchasing"}'
+                    class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:bg-green-600 transition-colors">
                     <span>Purchasing Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>

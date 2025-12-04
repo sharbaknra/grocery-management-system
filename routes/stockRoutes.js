@@ -6,7 +6,7 @@ const verifyToken = require("../middleware/authMiddleware");
 const allowRoles = require("../middleware/roleMiddleware");
 
 router.post("/restock", verifyToken, allowRoles("admin", "manager"), stockController.restock);
-router.post("/reduce", verifyToken, allowRoles("admin", "manager", "staff"), stockController.reduce);
+router.post("/reduce", verifyToken, allowRoles("admin", "manager"), stockController.reduce);
 
 // GET LOW STOCK ALERTS (Module 2.8.3)
 router.get("/low-stock", verifyToken, allowRoles("admin", "manager", "staff", "purchasing"), stockController.getLowStock);

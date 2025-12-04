@@ -184,8 +184,11 @@ function reportsPage() {
       function renderSalesReport(data) {
         if (!outputEl) return;
         
-        const totalSales = data.total_sales || data.todaySales || 0;
-        const totalOrders = data.total_orders || data.totalOrders || 0;
+        // Handle API response structure: { success: true, data: { today: {...}, week: {...}, month: {...} } }
+        const salesData = data?.data || data || {};
+        const today = salesData.today || {};
+        const totalSales = today.revenue || salesData.total_sales || data.total_sales || data.todaySales || 0;
+        const totalOrders = today.orders || salesData.total_orders || data.total_orders || data.totalOrders || 0;
         const avgOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
 
         outputEl.innerHTML = `

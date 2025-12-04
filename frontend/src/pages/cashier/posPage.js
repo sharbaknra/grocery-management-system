@@ -368,8 +368,8 @@ function posPage() {
             payment_method: selectedPayment,
           });
           
-          // Show success modal
-          const orderId = result.orderId || result.order_id || result.id || "---";
+          // Extract order ID from response (handle different response structures)
+          const orderId = result?.data?.order_id || result?.order_id || result?.data?.order?.order_id || result?.orderId || result?.id || "---";
           const total = cart.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0);
           
           document.querySelector("[data-order-id]").textContent = orderId;
@@ -379,6 +379,9 @@ function posPage() {
           // Clear cart
           cart = [];
           renderCart();
+          
+          // Clear API cart as well
+          await cartService.clearCart().catch(() => {});
           
           // Reload products to update stock
           await loadProducts();
@@ -398,6 +401,8 @@ function posPage() {
       // Success modal actions
       document.querySelector("[data-new-sale]")?.addEventListener("click", () => {
         successModal.classList.add("hidden");
+        // Optionally navigate to orders to see the new order
+        // navigate("orders");
       });
       
       document.querySelector("[data-print-receipt]")?.addEventListener("click", () => {

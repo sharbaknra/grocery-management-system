@@ -10,9 +10,6 @@ import { registerManagerDashboard } from "./manager/managerDashboard.js";
 import { registerPosPage } from "./cashier/posPage.js";
 import { registerPurchasingDashboard } from "./purchasing/purchasingDashboard.js";
 
-// Legacy Dashboard (kept for compatibility)
-import { registerDashboardPage } from "./dashboard/overviewPage.js";
-
 // Products
 import { registerProductsListPage } from "./products/listPage.js";
 import { registerProductDetailPage } from "./products/detailPage.js";
@@ -45,6 +42,11 @@ import { registerInvoiceDetailPage } from "./billing/invoiceDetailPage.js";
 // Settings
 import { registerSettingsPage } from "./settings/settingsPage.js";
 
+// Staff Management
+import { registerStaffListPage } from "./staff/listPage.js";
+import { registerStaffFormPage } from "./staff/formPage.js";
+import { registerStaffDetailPage } from "./staff/detailPage.js";
+
 /**
  * Register all page modules with the router
  */
@@ -60,9 +62,6 @@ export function registerPages(register) {
   registerManagerDashboard(register);     // manager-dashboard
   registerPosPage(register);               // pos (for cashiers)
   registerPurchasingDashboard(register);   // purchasing-dashboard
-
-  // Legacy Dashboard
-  registerDashboardPage(register);
 
   // Products
   registerProductsListPage(register);
@@ -95,4 +94,9 @@ export function registerPages(register) {
 
   // Settings
   registerSettingsPage(register);
+
+  // Staff Management
+  registerStaffListPage(register);
+  registerStaffFormPage(register);
+  registerStaffDetailPage(register);
 }

@@ -1,10 +1,18 @@
 import { suppliersService } from "../../services/suppliersService.js";
+import { getState } from "../../state/appState.js";
 
 export function registerSuppliersListPage(register) {
   register("suppliers", suppliersListPage);
 }
 
 function suppliersListPage() {
+  // Check user role to conditionally show supplier creation button
+  const userRole = getState().user?.role;
+  const isPurchasing = userRole === "purchasing";
+  const isStaff = userRole === "staff";
+  // Only admin and manager can create suppliers
+  const canCreateSupplier = userRole === "admin" || userRole === "manager";
+  
   return {
     html: `
       <div class="max-w-7xl mx-auto space-y-6">
@@ -14,10 +22,12 @@ function suppliersListPage() {
             <h1 class="text-3xl font-black tracking-tight text-text-primary-light dark:text-text-primary-dark">Suppliers</h1>
             <p class="text-text-secondary-light dark:text-text-secondary-dark mt-1">Manage your supplier information efficiently.</p>
           </div>
+          ${canCreateSupplier ? `
           <button data-add-supplier class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors shadow-sm">
             <span class="material-symbols-outlined text-lg fill">add</span>
             Add Supplier
           </button>
+          ` : ''}
         </div>
         
         <!-- Search & Filters -->

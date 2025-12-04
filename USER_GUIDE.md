@@ -61,6 +61,7 @@ The Cashier handles day-to-day sales. They can:
 - View order history
 - Print receipts and invoices
 - Handle cash and card payments
+> Note: Cashiers/Staff do **not** perform manual stock adjustments; all non-sale stock corrections are handled by Store Managers.
 
 ### Purchasing Agent
 The Purchasing Agent manages stock replenishment. They can:
@@ -68,7 +69,7 @@ The Purchasing Agent manages stock replenishment. They can:
 - See which items need reordering
 - Manage supplier contacts
 - Create and track purchase orders
-- Monitor low-stock alerts
+- Monitor low-stock alerts and inventory status via the Stock Levels and Reports pages (read-only access to inventory reports)
 
 ---
 

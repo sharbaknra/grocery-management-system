@@ -1,11 +1,16 @@
 import { stockService } from "../../services/stockService.js";
 import { productsService } from "../../services/productsService.js";
+import { getState } from "../../state/appState.js";
 
 export function registerStockLevelsPage(register) {
   register("stock", stockLevelsPage);
 }
 
 function stockLevelsPage() {
+  // Check user role to conditionally show management buttons
+  const userRole = getState().user?.role;
+  const isPurchasing = userRole === "purchasing";
+  
   return {
     html: `
       <div class="max-w-7xl mx-auto space-y-6">
@@ -15,10 +20,12 @@ function stockLevelsPage() {
             <h1 class="text-3xl font-black tracking-tight text-text-primary-light dark:text-text-primary-dark">Stock Levels</h1>
             <p class="text-text-secondary-light dark:text-text-secondary-dark mt-1">Monitor and manage your inventory stock levels.</p>
           </div>
+          ${!isPurchasing ? `
           <button data-route="product-form" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors shadow-sm">
             <span class="material-symbols-outlined text-lg">add</span>
             Add New Product
           </button>
+          ` : ''}
         </div>
         
         <!-- Search & Filters -->
@@ -159,6 +166,10 @@ function stockLevelsPage() {
       const updateModal = document.querySelector("[data-update-modal]");
       const updateForm = document.querySelector("[data-update-form]");
       
+      // Check user role for access restrictions
+      const userRole = getState().user?.role;
+      const isPurchasing = userRole === "purchasing";
+      
       let debounceTimer = null;
       let allProducts = [];
 
@@ -204,6 +215,10 @@ function stockLevelsPage() {
         // Filter by status if needed
         const statusFilter = filterStatus?.value;
         let filtered = products;
+        
+        // Get user role for access restrictions (re-check in case state changed)
+        const currentUserRole = getState().user?.role;
+        const currentIsPurchasing = currentUserRole === "purchasing";
         
         if (statusFilter) {
           filtered = products.filter((p) => {
@@ -258,6 +273,7 @@ function stockLevelsPage() {
                 <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${lastRestock}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
+                ${!currentIsPurchasing ? `
                 <button 
                   data-update-stock="${product.id}"
                   data-product-name="${product.name}"
@@ -265,6 +281,7 @@ function stockLevelsPage() {
                 >
                   Update quantity
                 </button>
+                ` : '<span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">-</span>'}
               </td>
             </tr>
           `;
@@ -345,10 +362,17 @@ function stockLevelsPage() {
           submitBtn.disabled = true;
           submitBtn.textContent = "Saving...";
 
+          // Prepare payload with correct field names (backend expects productId, not product_id)
+          const payload = {
+            productId: parseInt(productId),
+            quantity: quantity,
+            reason: reason || undefined, // Optional field
+          };
+
           if (adjustmentType === "restock") {
-            await stockService.restock(productId, { quantity, reason });
+            await stockService.restock(payload);
           } else {
-            await stockService.reduce(productId, { quantity, reason });
+            await stockService.reduce(payload);
           }
 
           closeUpdateModal();

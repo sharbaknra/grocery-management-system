@@ -204,7 +204,8 @@ const Reports = {
       FROM products p
       INNER JOIN stock s ON p.id = s.product_id
       LEFT JOIN suppliers sup ON p.supplier_id = sup.id
-      WHERE s.quantity <= s.min_stock_level
+      WHERE s.quantity > 0
+        AND s.quantity < s.min_stock_level
         AND s.min_stock_level > 0
       ORDER BY s.quantity ASC, shortage DESC
     `;

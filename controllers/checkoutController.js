@@ -15,7 +15,9 @@ const checkoutController = {
       connection = await db.promise().getConnection();
       
       // Get user's cart
+      console.log(`[CHECKOUT] Starting checkout for user ${userId}`);
       const cartItems = await Cart.getByUserId(userId);
+      console.log(`[CHECKOUT] Cart items retrieved: ${cartItems?.length || 0} items`);
       
       if (!cartItems || cartItems.length === 0) {
         if (connection) connection.release();
@@ -26,6 +28,7 @@ const checkoutController = {
       }
 
       // Begin transaction
+      console.log(`[CHECKOUT] Beginning transaction`);
       await connection.beginTransaction();
 
       try {
@@ -79,9 +82,21 @@ const checkoutController = {
         // STEP 2: Inventory Deduction (Atomic UPDATE with row-level locking)
         // Deduct stock for all validated items
         const stockDeductions = [];
+        console.log(`[CHECKOUT] Starting stock deduction for ${validatedItems.length} items`);
+        
         for (const item of validatedItems) {
           const productId = item.product_id;
           const quantity = item.quantity;
+          
+          console.log(`[CHECKOUT] Deducting stock - Product ID: ${productId}, Quantity: ${quantity}`);
+          
+          // Get current stock before deduction for logging
+          const [beforeStock] = await connection.query(
+            'SELECT quantity FROM stock WHERE product_id = ?',
+            [productId]
+          );
+          const beforeQty = beforeStock.length > 0 ? beforeStock[0].quantity : 0;
+          console.log(`[CHECKOUT] Stock before deduction - Product ${productId}: ${beforeQty}`);
           
           // Atomic decrement with conditional check (prevents negative stock)
           const [result] = await connection.query(
@@ -89,15 +104,32 @@ const checkoutController = {
             [quantity, productId, quantity]
           );
           
+          console.log(`[CHECKOUT] Stock update result - Product ${productId}:`, {
+            affectedRows: result.affectedRows,
+            changedRows: result.changedRows,
+            warningCount: result.warningCount
+          });
+          
           if (result.affectedRows === 0) {
-            throw new Error(`Failed to deduct stock for product ID ${productId}. Stock may have changed.`);
+            console.error(`[CHECKOUT] Stock deduction failed - Product ${productId}, Requested: ${quantity}, Available: ${beforeQty}`);
+            throw new Error(`Failed to deduct stock for product ID ${productId}. Requested: ${quantity}, Available: ${beforeQty}. Stock may have changed.`);
           }
+          
+          // Verify stock after deduction
+          const [afterStock] = await connection.query(
+            'SELECT quantity FROM stock WHERE product_id = ?',
+            [productId]
+          );
+          const afterQty = afterStock.length > 0 ? afterStock[0].quantity : 0;
+          console.log(`[CHECKOUT] Stock after deduction - Product ${productId}: ${afterQty} (expected: ${beforeQty - quantity})`);
           
           stockDeductions.push({
             product_id: productId,
             quantity: quantity,
           });
         }
+        
+        console.log(`[CHECKOUT] Stock deduction completed for ${stockDeductions.length} products`);
 
         // Calculate order totals
         let totalPrice = 0;
@@ -121,9 +153,10 @@ const checkoutController = {
         const finalTotal = totalPrice + taxApplied - discountApplied;
 
         // STEP 3: Order Record Creation
+        console.log(`[CHECKOUT] Creating order - Total: ${finalTotal}, Tax: ${taxApplied}, Discount: ${discountApplied}`);
         const orderData = {
           user_id: userId,
-          status: "Pending",
+          status: "Completed", // POS checkout is immediate, so status is Completed
           total_price: finalTotal,
           tax_applied: taxApplied,
           discount_applied: discountApplied,
@@ -141,6 +174,7 @@ const checkoutController = {
         );
         
         const orderId = orderResult.insertId;
+        console.log(`[CHECKOUT] Order created with ID: ${orderId}`);
 
         // STEP 4: Order Item Population
         // Create all order items with unit_price_at_sale
@@ -170,7 +204,9 @@ const checkoutController = {
         await connection.query('DELETE FROM cart WHERE user_id = ?', [userId]);
 
         // Commit transaction - all steps succeeded
+        console.log(`[CHECKOUT] Committing transaction for order ${orderId}`);
         await connection.commit();
+        console.log(`[CHECKOUT] Transaction committed successfully for order ${orderId}`);
 
         // Get order details with items for response
         const orderDetails = await Order.getById(orderId);
@@ -192,7 +228,9 @@ const checkoutController = {
 
       } catch (error) {
         // Rollback transaction on any error
+        console.error(`[CHECKOUT] Error in transaction, rolling back:`, error.message);
         await connection.rollback();
+        console.error(`[CHECKOUT] Transaction rolled back`);
         throw error; // Re-throw to be caught by outer catch
       }
 

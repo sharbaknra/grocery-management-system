@@ -79,11 +79,32 @@ function ordersHistoryPage() {
       async function loadOrders(filters = {}) {
         try {
           renderLoading();
-          const orders = await ordersService.list(filters);
-          const orderList = Array.isArray(orders) ? orders : orders.orders || [];
+          const response = await ordersService.list(filters);
+          
+          // Debug logging
+          console.log("Orders API Response:", response);
+          
+          // Handle different response structures
+          // API returns: { success: true, data: { orders: [...], total_orders: ... } }
+          let orderList = [];
+          
+          if (Array.isArray(response)) {
+            orderList = response;
+          } else if (response?.data?.orders && Array.isArray(response.data.orders)) {
+            orderList = response.data.orders;
+          } else if (response?.orders && Array.isArray(response.orders)) {
+            orderList = response.orders;
+          } else if (Array.isArray(response?.data)) {
+            orderList = response.data;
+          }
+          
+          console.log("Parsed order list:", orderList);
+          console.log("Number of orders:", orderList.length);
+          
           renderOrders(orderList);
         } catch (error) {
           console.error("Failed to load orders:", error);
+          console.error("Error details:", error.message, error.details);
           renderError("Failed to load orders. Please try again.");
         }
       }
@@ -129,7 +150,9 @@ function ordersHistoryPage() {
         }
 
         ordersTable.innerHTML = orders.map((order) => {
-          const date = new Date(order.created_at || order.order_date);
+          // Handle different order ID field names
+          const orderId = order.order_id || order.id;
+          const date = new Date(order.created_at || order.order_date || order.date);
           const formattedDate = date.toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",
@@ -137,29 +160,35 @@ function ordersHistoryPage() {
             hour: "2-digit",
             minute: "2-digit",
           });
-          const total = parseFloat(order.total_amount || order.total || 0);
+          const total = parseFloat(order.total_price || order.total_amount || order.total || 0);
           const status = order.status || "completed";
-          const statusClass = status === "completed" ? "bg-success/10 text-success" : "bg-warning/10 text-warning";
+          const statusClass = status === "completed" ? "bg-success/10 text-success" : status === "pending" ? "bg-warning/10 text-warning" : "bg-danger/10 text-danger";
+          
+          // Get customer name from order or user_name
+          const customerName = order.user_name || order.customer_name || "Walk-in Customer";
+          
+          // Get item count
+          const itemCount = order.item_count || (Array.isArray(order.items) ? order.items.length : "-");
 
           return `
             <tr class="hover:bg-background-light dark:hover:bg-background-dark transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-mono font-medium text-text-primary-light dark:text-text-primary-dark">#${order.id}</span>
+                <span class="text-sm font-mono font-medium text-text-primary-light dark:text-text-primary-dark">#${orderId}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${formattedDate}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm text-text-primary-light dark:text-text-primary-dark">${order.customer_name || "Walk-in"}</span>
+                <span class="text-sm text-text-primary-light dark:text-text-primary-dark">${customerName}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${order.item_count || order.items?.length || "-"}</span>
+                <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${itemCount}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${formatCurrency(total)}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark capitalize">${order.payment_method || "Cash"}</span>
+                <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark capitalize">${order.payment_method || "cash"}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex items-center gap-1.5 rounded-full ${statusClass} px-2.5 py-1 text-xs font-medium capitalize">
@@ -168,7 +197,7 @@ function ordersHistoryPage() {
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button 
-                  data-view-order="${order.id}"
+                  data-view-order="${orderId}"
                   class="text-primary text-sm font-medium hover:underline"
                 >
                   View Details

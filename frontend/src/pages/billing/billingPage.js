@@ -1,10 +1,15 @@
 import { billingService } from "../../services/billingService.js";
+import { getState } from "../../state/appState.js";
 
 export function registerBillingPage(register) {
   register("billing", billingPage);
 }
 
 function billingPage() {
+  // Check user role to conditionally show summary statistics
+  const userRole = getState().user?.role;
+  const isStaff = userRole === "staff";
+  
   return {
     html: `
       <div class="max-w-7xl mx-auto space-y-6">
@@ -22,6 +27,7 @@ function billingPage() {
           </div>
         </div>
         
+        ${!isStaff ? `
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Total Revenue -->
@@ -76,6 +82,7 @@ function billingPage() {
             </div>
           </div>
         </div>
+        ` : ''}
         
         <!-- Filters -->
         <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark p-4">
@@ -172,7 +179,14 @@ function billingPage() {
         try {
           renderLoading();
           const response = await billingService.getInvoices();
-          allInvoices = Array.isArray(response) ? response : (response.orders || response.data || []);
+          // Handle different response structures
+          allInvoices = Array.isArray(response) 
+            ? response 
+            : (response.data?.orders || response.orders || response.data || []);
+          // Ensure it's an array
+          if (!Array.isArray(allInvoices)) {
+            allInvoices = [];
+          }
           applyFilters();
           updateSummary();
         } catch (error) {

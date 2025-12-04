@@ -9,10 +9,10 @@ const PUBLIC_ROUTES = new Set(["home", "login", "register"]);
 
 // Role-based route permissions
 const ROLE_ROUTES = {
-  admin: ["manager-dashboard", "products", "product-detail", "product-form", "stock", "suppliers", "supplier-detail", "supplier-form", "reorder-dashboard", "orders", "order-detail", "reports", "billing", "invoice-detail", "settings"],
-  manager: ["manager-dashboard", "products", "product-detail", "product-form", "stock", "suppliers", "supplier-detail", "supplier-form", "reorder-dashboard", "orders", "order-detail", "reports", "billing", "invoice-detail", "settings"],
+  admin: ["manager-dashboard", "products", "product-detail", "product-form", "stock", "suppliers", "supplier-detail", "supplier-form", "reorder-dashboard", "orders", "order-detail", "reports", "billing", "invoice-detail", "settings", "staff-list", "staff-form", "staff-detail"],
+  manager: ["manager-dashboard", "products", "product-detail", "product-form", "stock", "suppliers", "supplier-detail", "supplier-form", "reorder-dashboard", "orders", "order-detail", "reports", "billing", "invoice-detail", "settings", "staff-list", "staff-form", "staff-detail"],
   staff: ["pos", "orders", "order-detail", "billing", "invoice-detail"],
-  purchasing: ["purchasing-dashboard", "suppliers", "supplier-detail", "reorder-dashboard", "stock"],
+  purchasing: ["purchasing-dashboard", "suppliers", "supplier-detail", "reorder-dashboard", "stock", "reports"],
 };
 
 // Default dashboard per role
@@ -67,7 +67,7 @@ function registerPage(id, factory) {
   routes.set(id, factory);
 }
 
-function navigate(page) {
+function navigate(page, queryParams = {}) {
   const hasSession = Boolean(getState().token);
   const isPublic = PUBLIC_ROUTES.has(page);
 
@@ -97,6 +97,10 @@ function navigate(page) {
   }
 
   currentRoute = page;
+  // Store query params in sessionStorage for the page to access
+  if (Object.keys(queryParams).length > 0) {
+    sessionStorage.setItem(`gms:routeParams:${page}`, JSON.stringify(queryParams));
+  }
   persistLastRoute(page);
   renderPage();
 }
@@ -160,7 +164,21 @@ function renderPublicPage() {
     return;
   }
 
-  const result = factory({ route: currentRoute, state: getState() });
+  // Get route params from sessionStorage
+  const routeParamsKey = `gms:routeParams:${currentRoute}`;
+  let routeParams = {};
+  try {
+    const stored = sessionStorage.getItem(routeParamsKey);
+    if (stored) {
+      routeParams = JSON.parse(stored);
+      // Clear after reading
+      sessionStorage.removeItem(routeParamsKey);
+    }
+  } catch (e) {
+    // Ignore parse errors
+  }
+
+  const result = factory({ route: currentRoute, state: getState(), params: routeParams });
   const html = typeof result === "string" ? result : result?.html ?? "";
   appRoot.innerHTML = html;
 
@@ -170,6 +188,7 @@ function renderPublicPage() {
       navigate,
       root: appRoot,
       route: currentRoute,
+      params: routeParams,
       getState,
       subscribe,
     });
@@ -304,6 +323,7 @@ function getNavItemsForRole(role) {
       { route: "orders", icon: "receipt_long", label: "Orders" },
       { route: "billing", icon: "request_quote", label: "Billing" },
       { route: "reports", icon: "bar_chart", label: "Reports" },
+      { route: "staff-list", icon: "people", label: "Manage Staff" },
     ],
     manager: [
       { route: "manager-dashboard", icon: "dashboard", label: "Dashboard" },
@@ -313,6 +333,7 @@ function getNavItemsForRole(role) {
       { route: "orders", icon: "receipt_long", label: "Orders" },
       { route: "billing", icon: "request_quote", label: "Billing" },
       { route: "reports", icon: "bar_chart", label: "Reports" },
+      { route: "staff-list", icon: "people", label: "Manage Staff" },
     ],
     staff: [
       { route: "pos", icon: "point_of_sale", label: "Point of Sale" },
@@ -324,6 +345,7 @@ function getNavItemsForRole(role) {
       { route: "suppliers", icon: "domain", label: "Suppliers" },
       { route: "reorder-dashboard", icon: "shopping_cart", label: "Reorder" },
       { route: "stock", icon: "monitoring", label: "Stock Levels" },
+      { route: "reports", icon: "bar_chart", label: "Reports" },
     ],
   };
 
@@ -381,6 +403,9 @@ function formatTitle(route) {
     "pos": "Point of Sale",
     "purchasing-dashboard": "Purchasing Dashboard",
     "reorder-dashboard": "Reorder Dashboard",
+    "staff-list": "Manage Staff",
+    "staff-form": "Staff Member",
+    "staff-detail": "Staff Details",
   };
   return titles[route] || route
     .split("-")
@@ -416,7 +441,16 @@ function attachGlobalListeners() {
     const route = target.dataset.route;
     if (route) {
       event.preventDefault();
-      navigate(route);
+      // Check for data-route-params attribute (JSON string)
+      let queryParams = {};
+      if (target.dataset.routeParams) {
+        try {
+          queryParams = JSON.parse(target.dataset.routeParams);
+        } catch (e) {
+          console.warn("Invalid route params:", e);
+        }
+      }
+      navigate(route, queryParams);
     }
   });
 }
