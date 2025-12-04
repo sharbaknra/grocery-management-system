@@ -152,6 +152,10 @@ const checkoutController = {
         const discountApplied = 0.00; // Can be enhanced with discount codes
         const finalTotal = totalPrice + taxApplied - discountApplied;
 
+        // Extract optional customer info from request body (for POS / staff sales)
+        const customerName = req.body?.customer_name || null;
+        const customerPhone = req.body?.customer_phone || null;
+
         // STEP 3: Order Record Creation
         console.log(`[CHECKOUT] Creating order - Total: ${finalTotal}, Tax: ${taxApplied}, Discount: ${discountApplied}`);
         const orderData = {
@@ -160,16 +164,20 @@ const checkoutController = {
           total_price: finalTotal,
           tax_applied: taxApplied,
           discount_applied: discountApplied,
+          customer_name: customerName,
+          customer_phone: customerPhone,
         };
         
         const [orderResult] = await connection.query(
-          'INSERT INTO orders (user_id, status, total_price, tax_applied, discount_applied) VALUES (?, ?, ?, ?, ?)',
+          'INSERT INTO orders (user_id, status, total_price, tax_applied, discount_applied, customer_name, customer_phone) VALUES (?, ?, ?, ?, ?, ?, ?)',
           [
             orderData.user_id,
             orderData.status,
             orderData.total_price,
             orderData.tax_applied,
             orderData.discount_applied,
+            orderData.customer_name,
+            orderData.customer_phone,
           ]
         );
         

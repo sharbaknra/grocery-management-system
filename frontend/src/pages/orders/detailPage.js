@@ -209,10 +209,14 @@ function renderOrder(order) {
   // Status
   const statusEl = document.querySelector("[data-order-status]");
   if (statusEl) {
-    const status = order.status || "completed";
-    const statusClass = status === "completed" ? "bg-success/10 text-success" : "bg-warning/10 text-warning";
+    const rawStatus = (order.status || "completed").toString().toLowerCase();
+    const statusClass = rawStatus === "completed"
+      ? "bg-success/10 text-success"
+      : rawStatus === "pending"
+        ? "bg-warning/10 text-warning"
+        : "bg-danger/10 text-danger";
     statusEl.className = `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ${statusClass}`;
-    statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    statusEl.textContent = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
   }
 
   // Customer Info

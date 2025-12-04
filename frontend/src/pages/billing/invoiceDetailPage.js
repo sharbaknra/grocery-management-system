@@ -202,8 +202,8 @@ function invoiceDetailPage() {
             <div class="py-6 border-b border-border-light dark:border-border-dark">
               <h3 class="text-sm font-medium uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark mb-3">Bill To</h3>
               <div class="text-text-primary-light dark:text-text-primary-dark">
-                <p class="text-lg font-bold">${order.user_name || "Walk-in Customer"}</p>
-                ${order.user_email ? `<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${order.user_email}</p>` : ""}
+                <p class="text-lg font-bold">${order.customer_name || "Walk-in Customer"}</p>
+                ${order.customer_phone ? `<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">${order.customer_phone}</p>` : ""}
               </div>
             </div>
             

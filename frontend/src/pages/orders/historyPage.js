@@ -161,11 +161,15 @@ function ordersHistoryPage() {
             minute: "2-digit",
           });
           const total = parseFloat(order.total_price || order.total_amount || order.total || 0);
-          const status = order.status || "completed";
-          const statusClass = status === "completed" ? "bg-success/10 text-success" : status === "pending" ? "bg-warning/10 text-warning" : "bg-danger/10 text-danger";
+          const rawStatus = (order.status || "completed").toString().toLowerCase();
+          const statusClass = rawStatus === "completed"
+            ? "bg-success/10 text-success"
+            : rawStatus === "pending"
+              ? "bg-warning/10 text-warning"
+              : "bg-danger/10 text-danger";
           
-          // Get customer name from order or user_name
-          const customerName = order.user_name || order.customer_name || "Walk-in Customer";
+          // Prefer explicit end-customer; otherwise treat as anonymous walk-in
+          const customerName = order.customer_name || "Walk-in Customer";
           
           // Get item count
           const itemCount = order.item_count || (Array.isArray(order.items) ? order.items.length : "-");
@@ -192,7 +196,7 @@ function ordersHistoryPage() {
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex items-center gap-1.5 rounded-full ${statusClass} px-2.5 py-1 text-xs font-medium capitalize">
-                  ${status}
+                  ${rawStatus}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right">

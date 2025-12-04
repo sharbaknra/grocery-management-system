@@ -75,11 +75,13 @@
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | order_id | INT | PRIMARY KEY, AUTO_INCREMENT | Order ID |
-| user_id | INT | NOT NULL, FK → users.id | Customer ID |
+| user_id | INT | NOT NULL, FK → users.id | User who placed the order (staff/manager/customer) |
 | status | ENUM | NOT NULL, DEFAULT 'Pending' | Order status: Pending, Completed, Cancelled |
 | total_price | DECIMAL(10,2) | NOT NULL, DEFAULT 0.00 | Order total |
 | tax_applied | DECIMAL(10,2) | NOT NULL, DEFAULT 0.00 | Tax amount |
 | discount_applied | DECIMAL(10,2) | NOT NULL, DEFAULT 0.00 | Discount amount |
+| customer_name | VARCHAR(255) | NULL | End-customer name for POS sales (optional) |
+| customer_phone | VARCHAR(50) | NULL | End-customer phone for POS sales (optional) |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Order timestamp |
 | updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE | Update timestamp |
 

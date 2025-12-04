@@ -21,6 +21,14 @@ function reorderDashboardPage() {
           </button>
         </div>
         
+        <!-- Fallback Banner -->
+        <div data-fallback-banner class="hidden flex items-start gap-3 px-4 py-3 rounded-lg border border-warning/30 bg-warning/10 text-warning text-sm">
+          <span class="material-symbols-outlined text-base">info</span>
+          <div>
+            Showing low-stock items grouped by supplier because no supplier-linked shortages were found.
+          </div>
+        </div>
+
         <!-- Loading State -->
         <div data-loading class="flex flex-col items-center justify-center py-20">
           <div class="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
@@ -49,6 +57,7 @@ function reorderDashboardPage() {
       const contentEl = document.querySelector("[data-content]");
       const emptyEl = document.querySelector("[data-empty]");
       const orderCountEl = document.querySelector("[data-order-count]");
+      const fallbackBanner = document.querySelector("[data-fallback-banner]");
 
       let reorderItems = new Set();
 
@@ -81,28 +90,69 @@ function reorderDashboardPage() {
       async function loadReorderData() {
         try {
           showLoading();
-          
-          // Try to get reorder dashboard data, fall back to low stock
-          let data;
-          try {
-            data = await suppliersService.getReorderDashboard();
-          } catch {
-            // Fall back to low stock data
-            const lowStock = await stockService.getLowStock();
-            data = groupBySupplier(lowStock);
-          }
+          fallbackBanner?.classList.add("hidden");
+          reorderItems = new Set();
+          updateOrderCount();
 
-          if (!data || (Array.isArray(data) && !data.length) || (data.groups && !data.groups.length)) {
-            showEmpty();
+          const dashboardGroups = await fetchDashboardGroups();
+          if (dashboardGroups.length) {
+            renderSupplierGroups(dashboardGroups);
+            showContent();
             return;
           }
 
-          renderSupplierGroups(Array.isArray(data) ? data : data.groups || []);
-          showContent();
+          const fallbackGroups = await fetchFallbackLowStockGroups();
+          if (fallbackGroups.length) {
+            fallbackBanner?.classList.remove("hidden");
+            renderSupplierGroups(fallbackGroups);
+            showContent();
+            return;
+          }
+
+          showEmpty();
         } catch (error) {
           console.error("Failed to load reorder data:", error);
           showEmpty();
         }
+      }
+
+      async function fetchDashboardGroups() {
+        try {
+          const response = await suppliersService.getReorderDashboard();
+          return normalizeDashboardGroups(response);
+        } catch (error) {
+          console.warn("Reorder dashboard request failed, will attempt fallback.", error);
+          return [];
+        }
+      }
+
+      async function fetchFallbackLowStockGroups() {
+        try {
+          const response = await stockService.getLowStock();
+          const items = normalizeLowStockItems(response);
+          if (!items.length) return [];
+          return groupBySupplier(items);
+        } catch (error) {
+          console.warn("Low stock fallback request failed.", error);
+          return [];
+        }
+      }
+
+      function normalizeDashboardGroups(payload) {
+        if (!payload) return [];
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload.data)) return payload.data;
+        if (Array.isArray(payload.groups)) return payload.groups;
+        if (Array.isArray(payload.data?.groups)) return payload.data.groups;
+        return [];
+      }
+
+      function normalizeLowStockItems(payload) {
+        if (!payload) return [];
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload.items)) return payload.items;
+        if (Array.isArray(payload.data?.items)) return payload.data.items;
+        return [];
       }
 
       function groupBySupplier(products) {
@@ -125,7 +175,8 @@ function reorderDashboardPage() {
         if (!contentEl) return;
 
         contentEl.innerHTML = groups.map((group, index) => {
-          const products = group.products || [];
+          // Support both backend dashboard shape (items[]) and fallback shape (products[])
+          const products = group.products || group.items || [];
           const lowStockCount = products.length;
 
           return `
@@ -229,12 +280,12 @@ function reorderDashboardPage() {
           btn.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const supplierId = btn.dataset.addAllSupplier;
             const group = groups.find((g) => (g.supplier_id || g.supplier_name) == supplierId);
-            
-            if (group?.products) {
-              group.products.forEach((product) => {
+            if (group) {
+              const products = group.products || group.items || [];
+              products.forEach((product) => {
                 const productId = product.id || product.product_id;
                 reorderItems.add(productId);
               });

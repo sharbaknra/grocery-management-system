@@ -1,4 +1,5 @@
 import { reportsService } from "../../services/reportsService.js";
+import { getState } from "../../state/appState.js";
 
 export function registerReportsPage(register) {
   register("reports", reportsPage);
@@ -17,23 +18,8 @@ function reportsPage() {
         </div>
         
         <!-- Report Type Selection -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button data-report-type="sales" class="report-type-btn flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-primary bg-primary/5 text-primary transition-colors">
-            <span class="material-symbols-outlined text-4xl">payments</span>
-            <span class="font-medium">Sales Summary</span>
-          </button>
-          <button data-report-type="inventory" class="report-type-btn flex flex-col items-center gap-3 p-6 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors">
-            <span class="material-symbols-outlined text-4xl">inventory_2</span>
-            <span class="font-medium">Inventory Status</span>
-          </button>
-          <button data-report-type="products" class="report-type-btn flex flex-col items-center gap-3 p-6 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors">
-            <span class="material-symbols-outlined text-4xl">trending_up</span>
-            <span class="font-medium">Top Products</span>
-          </button>
-          <button data-report-type="expiring" class="report-type-btn flex flex-col items-center gap-3 p-6 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors">
-            <span class="material-symbols-outlined text-4xl">schedule</span>
-            <span class="font-medium">Expiring Soon</span>
-          </button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-report-selector>
+          <!-- Buttons rendered dynamically based on role -->
         </div>
         
         <!-- Filters -->
@@ -93,14 +79,18 @@ function reportsPage() {
     `,
 
     async onMount() {
-      const reportTypeBtns = document.querySelectorAll("[data-report-type]");
+      let reportTypeBtns = [];
       const loadingEl = document.querySelector("[data-report-loading]");
       const outputEl = document.querySelector("[data-report-output]");
       const generateBtn = document.querySelector("[data-generate-report]");
       const startDateInput = document.querySelector("[data-start-date]");
       const endDateInput = document.querySelector("[data-end-date]");
 
-      let currentReportType = "sales";
+      const userRole = getState().user?.role;
+      const isPurchasing = userRole === "purchasing";
+
+      // Default report type: sales for admin/staff, inventory for purchasing
+      let currentReportType = isPurchasing ? "inventory" : "sales";
       let currentReportData = null;
 
       // Set default dates (last 30 days)
@@ -374,10 +364,44 @@ function reportsPage() {
         `;
       }
 
+      const selectorEl = document.querySelector("[data-report-selector]");
+      const availableReports = isPurchasing
+        ? [
+            { type: "inventory", label: "Inventory Status", icon: "inventory_2" },
+            { type: "expiring", label: "Expiring Soon", icon: "schedule" },
+          ]
+        : [
+            { type: "sales", label: "Sales Summary", icon: "payments" },
+            { type: "inventory", label: "Inventory Status", icon: "inventory_2" },
+            { type: "products", label: "Top Products", icon: "trending_up" },
+            { type: "expiring", label: "Expiring Soon", icon: "schedule" },
+          ];
+
+      if (selectorEl) {
+        selectorEl.innerHTML = availableReports
+          .map(
+            (report, index) => `
+              <button 
+                data-report-type="${report.type}"
+                class="report-type-btn flex flex-col items-center gap-3 p-6 rounded-xl border ${
+                  index === 0 ? "border-2 border-primary bg-primary/5 text-primary" : "border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:border-primary hover:bg-primary/5 hover:text-primary"
+                } transition-colors"
+              >
+                <span class="material-symbols-outlined text-4xl">${report.icon}</span>
+                <span class="font-medium">${report.label}</span>
+              </button>
+            `
+          )
+          .join("");
+      }
+
+      reportTypeBtns = document.querySelectorAll("[data-report-type]");
+
       // Report type selection
       reportTypeBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
-          updateActiveReportType(btn.dataset.reportType);
+          const type = btn.dataset.reportType;
+          updateActiveReportType(type);
           generateReport();
         });
       });
@@ -403,6 +427,7 @@ function reportsPage() {
       });
 
       // Initial report
+      updateActiveReportType(currentReportType);
       await generateReport();
     },
   };

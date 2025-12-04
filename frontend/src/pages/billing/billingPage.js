@@ -203,7 +203,7 @@ function billingPage() {
         filteredInvoices = allInvoices.filter(invoice => {
           // Search filter
           const invoiceNum = billingService.generateInvoiceNumber(invoice.order_id, invoice.created_at).toLowerCase();
-          const customerName = (invoice.user_name || "").toLowerCase();
+          const customerName = (invoice.customer_name || "").toLowerCase();
           const matchesSearch = !searchTerm || 
             invoiceNum.includes(searchTerm) || 
             customerName.includes(searchTerm);
@@ -314,8 +314,8 @@ function billingPage() {
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div>
-                  <p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${invoice.user_name || "Walk-in Customer"}</p>
-                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${invoice.user_email || ""}</p>
+                  <p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${invoice.customer_name || "Walk-in Customer"}</p>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${invoice.customer_phone || ""}</p>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -430,8 +430,8 @@ function exportToCSV(invoices) {
   const headers = ["Invoice #", "Customer", "Email", "Date", "Amount", "Tax", "Discount", "Status"];
   const rows = invoices.map(inv => [
     billingService.generateInvoiceNumber(inv.order_id, inv.created_at),
-    inv.user_name || "Walk-in",
-    inv.user_email || "",
+    inv.customer_name || "Walk-in",
+    inv.customer_phone || "",
     billingService.formatDate(inv.created_at),
     inv.total_price || 0,
     inv.tax_applied || 0,
