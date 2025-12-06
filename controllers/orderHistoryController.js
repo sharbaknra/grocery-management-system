@@ -2,16 +2,16 @@ const Order = require("../models/orderModel");
 const OrderItem = require("../models/orderItemModel");
 
 const orderHistoryController = {
-  // GET /api/orders (Admin/Staff only) - Get all orders
+  // GET /api/orders (Admin/Manager/Staff) - Get all orders
   getAllOrders: async (req, res) => {
     // Additional authorization check (defense in depth)
-    // The middleware should block customers, but this adds an extra check
     const userRole = req.user?.role;
+    const allowedRoles = ["admin", "manager", "staff"];
     
-    if (userRole !== "admin" && userRole !== "staff") {
+    if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({
         success: false,
-        message: "Access forbidden. Insufficient privileges. Only Admin and Staff can view all orders.",
+        message: "Access forbidden. Insufficient privileges.",
       });
     }
     
@@ -25,6 +25,12 @@ const orderHistoryController = {
           const items = await OrderItem.getByOrderId(order.order_id);
           return {
             ...order,
+            // Normalize field names for frontend compatibility
+            id: order.order_id,
+            total_amount: parseFloat(order.total_price || 0),
+            total: parseFloat(order.total_price || 0),
+            tax: parseFloat(order.tax_applied || 0),
+            discount: parseFloat(order.discount_applied || 0),
             items: items.map((item) => ({
               order_item_id: item.order_item_id,
               product_id: item.product_id,
@@ -33,6 +39,9 @@ const orderHistoryController = {
               product_category: item.product_category,
               quantity: item.quantity,
               unit_price_at_sale: parseFloat(item.unit_price_at_sale), // Critical: price at time of sale
+              // Normalize field names for frontend compatibility
+              price: parseFloat(item.unit_price_at_sale),
+              unit_price: parseFloat(item.unit_price_at_sale),
               item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
             })),
             item_count: items.length,
@@ -71,6 +80,12 @@ const orderHistoryController = {
           const items = await OrderItem.getByOrderId(order.order_id);
           return {
             ...order,
+            // Normalize field names for frontend compatibility
+            id: order.order_id,
+            total_amount: parseFloat(order.total_price || 0),
+            total: parseFloat(order.total_price || 0),
+            tax: parseFloat(order.tax_applied || 0),
+            discount: parseFloat(order.discount_applied || 0),
             items: items.map((item) => ({
               order_item_id: item.order_item_id,
               product_id: item.product_id,
@@ -79,6 +94,9 @@ const orderHistoryController = {
               product_category: item.product_category,
               quantity: item.quantity,
               unit_price_at_sale: parseFloat(item.unit_price_at_sale), // Critical: price at time of sale
+              // Normalize field names for frontend compatibility
+              price: parseFloat(item.unit_price_at_sale),
+              unit_price: parseFloat(item.unit_price_at_sale),
               item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
             })),
             item_count: items.length,
@@ -120,8 +138,9 @@ const orderHistoryController = {
         });
       }
 
-      // Check authorization: Admin/Staff can see any order, Customers can only see their own
-      if (userRole !== "admin" && userRole !== "staff" && order.user_id !== userId) {
+      // Check authorization: Admin/Manager/Staff can see any order, Customers can only see their own
+      const canViewAll = ["admin", "manager", "staff"].includes(userRole);
+      if (!canViewAll && order.user_id !== userId) {
         return res.status(403).json({
           success: false,
           message: "Access forbidden. You can only view your own orders.",
@@ -133,6 +152,12 @@ const orderHistoryController = {
 
       const orderWithItems = {
         ...order,
+        // Normalize field names for frontend compatibility
+        id: order.order_id,
+        total_amount: parseFloat(order.total_price || 0),
+        total: parseFloat(order.total_price || 0),
+        tax: parseFloat(order.tax_applied || 0),
+        discount: parseFloat(order.discount_applied || 0),
         items: items.map((item) => ({
           order_item_id: item.order_item_id,
           product_id: item.product_id,
@@ -141,6 +166,9 @@ const orderHistoryController = {
           product_category: item.product_category,
           quantity: item.quantity,
           unit_price_at_sale: parseFloat(item.unit_price_at_sale),
+          // Normalize field names for frontend compatibility
+          price: parseFloat(item.unit_price_at_sale),
+          unit_price: parseFloat(item.unit_price_at_sale),
           item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
         })),
         item_count: items.length,
@@ -157,6 +185,39 @@ const orderHistoryController = {
       res.status(500).json({
         success: false,
         message: "Server error while fetching order.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      });
+    }
+  },
+
+  // GET /api/orders/:orderId/items - Get order items only (for billing)
+  getOrderItems: async (req, res) => {
+    try {
+      const { orderId } = req.params;
+
+      // Get order items
+      const items = await OrderItem.getByOrderId(parseInt(orderId));
+
+      res.status(200).json({
+        success: true,
+        data: {
+          items: items.map((item) => ({
+            order_item_id: item.order_item_id,
+            product_id: item.product_id,
+            product_name: item.product_name,
+            product_image: item.product_image,
+            product_category: item.product_category,
+            quantity: item.quantity,
+            unit_price_at_sale: parseFloat(item.unit_price_at_sale),
+            item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
+          })),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching order items:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error while fetching order items.",
         error: process.env.NODE_ENV === "development" ? error.message : undefined,
       });
     }

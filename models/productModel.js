@@ -39,11 +39,11 @@ const Product = {
       data.name,
       data.category,
       data.price,
-      data.barcode,
-      data.description,
-      data.expiry_date,
+      data.barcode || null,
+      data.description || null,
+      data.expiry_date || null, // Convert empty string to null
       data.supplier_id || null,
-      data.image_url,
+      data.image_url || null,
     ];
     const [result] = await db.promise().query(sql, values);
     return result.insertId;
@@ -78,11 +78,11 @@ const Product = {
       data.name,
       data.category,
       data.price,
-      data.barcode,
-      data.description,
-      data.expiry_date,
+      data.barcode || null,
+      data.description || null,
+      data.expiry_date || null, // Convert empty string to null
       data.supplier_id || null,
-      data.image_url,
+      data.image_url || null,
       id,
     ];
     const [result] = await db.promise().query(sql, values);

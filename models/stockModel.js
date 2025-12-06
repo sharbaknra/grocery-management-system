@@ -39,14 +39,16 @@ const Stock = {
   },
 
   // Get low stock items (Module 2.8.3)
-  // Returns products where quantity <= min_stock_level AND min_stock_level > 0
+  // Returns products where quantity > 0 AND quantity < min_stock_level AND min_stock_level > 0
+  // (Items with quantity = 0 are "Out of Stock", not "Low Stock")
   // (min_stock_level = 0 means no alert, so we exclude those)
   getLowStock: async () => {
     const sql = `
             SELECT p.id, p.name, s.quantity, s.min_stock_level 
             FROM products p
             JOIN stock s ON p.id = s.product_id
-            WHERE s.quantity <= s.min_stock_level
+            WHERE s.quantity > 0
+              AND s.quantity < s.min_stock_level
               AND s.min_stock_level > 0
             ORDER BY s.quantity ASC
         `;
