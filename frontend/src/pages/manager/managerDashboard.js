@@ -187,11 +187,18 @@ function managerDashboard() {
 
         // Update KPIs
         if (salesData.status === "fulfilled") {
-          const sales = salesData.value?.data || salesData.value || {};
+          const response = salesData.value;
+          console.log("Full sales response:", response);
+          const sales = response?.data || response || {};
+          console.log("Extracted sales data:", sales);
           const today = sales.today || {};
+          console.log("Today data:", today);
+          console.log("Total products value:", sales.totalProducts);
           updateKPI("todaySales", formatCurrency(today.revenue || 0));
           updateKPI("totalOrders", today.orders || 0);
           updateKPI("totalProducts", sales.totalProducts || 0);
+        } else {
+          console.error("Failed to load sales data:", salesData.reason);
         }
 
         // Update low stock count and table
@@ -315,11 +322,11 @@ function renderRecentOrders(orders) {
               <span class="material-symbols-outlined text-primary">receipt</span>
             </div>
             <div>
-              <p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Order #${order.id}</p>
+              <p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">Order #${order.id || order.order_id || 'N/A'}</p>
               <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${formattedDate}</p>
             </div>
           </div>
-          <p class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(order.total_amount || order.total || 0)}</p>
+          <p class="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(order.total_amount || order.total || order.total_price || 0)}</p>
         </div>
       `;
     })

@@ -251,7 +251,7 @@ function renderAppShell(state, role) {
         <div class="flex flex-col justify-between flex-1 p-4">
           <!-- Logo & Nav -->
           <div class="flex flex-col gap-4">
-            <div class="flex items-center gap-3 px-2 py-2">
+            <button data-route="home" class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer">
               <div class="flex items-center justify-center w-10 h-10 bg-primary/20 rounded-lg">
                 <span class="material-symbols-outlined text-primary">storefront</span>
               </div>
@@ -259,7 +259,7 @@ function renderAppShell(state, role) {
                 <h1 class="text-text-primary-light dark:text-text-primary-dark text-base font-bold leading-tight">Grocery MS</h1>
                 <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-normal">${roleName}</p>
               </div>
-            </div>
+            </button>
             
             <nav class="flex flex-col gap-1 mt-2">
               ${navItems}

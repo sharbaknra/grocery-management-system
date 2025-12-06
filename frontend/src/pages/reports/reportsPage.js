@@ -137,7 +137,8 @@ function reportsPage() {
           let data;
           switch (currentReportType) {
             case "sales":
-              data = await reportsService.getSalesSummary({ start_date: startDate, end_date: endDate });
+              // Sales summary doesn't need date parameters - it returns today/week/month automatically
+              data = await reportsService.getSalesSummary();
               renderSalesReport(data);
               break;
             case "inventory":
@@ -175,32 +176,114 @@ function reportsPage() {
       function renderSalesReport(data) {
         if (!outputEl) return;
         
-        // Handle API response structure: { success: true, data: { today: {...}, week: {...}, month: {...} } }
+        // Handle API response structure: { success: true, data: { today: {...}, week: {...}, month: {...}, totalProducts: ... } }
         const salesData = data?.data || data || {};
         const today = salesData.today || {};
-        const totalSales = today.revenue || salesData.total_sales || data.total_sales || data.todaySales || 0;
-        const totalOrders = today.orders || salesData.total_orders || data.total_orders || data.totalOrders || 0;
-        const avgOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
+        const week = salesData.week || {};
+        const month = salesData.month || {};
+        
+        const todayRevenue = today.revenue || 0;
+        const todayOrders = today.orders || 0;
+        const todayItems = today.items_sold || 0;
+        const todayAvg = todayOrders > 0 ? todayRevenue / todayOrders : 0;
+        
+        const weekRevenue = week.revenue || 0;
+        const weekOrders = week.orders || 0;
+        const weekItems = week.items_sold || 0;
+        const weekAvg = weekOrders > 0 ? weekRevenue / weekOrders : 0;
+        
+        const monthRevenue = month.revenue || 0;
+        const monthOrders = month.orders || 0;
+        const monthItems = month.items_sold || 0;
+        const monthAvg = monthOrders > 0 ? monthRevenue / monthOrders : 0;
 
         outputEl.innerHTML = `
-          <h3 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6">Sales Summary</h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div class="bg-background-light dark:bg-background-dark rounded-lg p-4">
-              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Total Sales</p>
-              <p class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mt-1">${formatCurrency(totalSales)}</p>
+          <div class="space-y-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Latest Sales Summary</h3>
+              <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Updated: ${new Date().toLocaleString()}</span>
             </div>
-            <div class="bg-background-light dark:bg-background-dark rounded-lg p-4">
-              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Total Orders</p>
-              <p class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mt-1">${totalOrders}</p>
+            
+            <!-- Today's Sales -->
+            <div class="bg-background-light dark:bg-background-dark rounded-xl border border-border-light dark:border-border-dark p-6">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary">today</span>
+                <h4 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Today's Sales</h4>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Revenue</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(todayRevenue)}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Orders</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${todayOrders}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Items Sold</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${todayItems}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Avg Order</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(todayAvg)}</p>
+                </div>
+              </div>
             </div>
-            <div class="bg-background-light dark:bg-background-dark rounded-lg p-4">
-              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Average Order</p>
-              <p class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mt-1">${formatCurrency(avgOrder)}</p>
+            
+            <!-- This Week's Sales -->
+            <div class="bg-background-light dark:bg-background-dark rounded-xl border border-border-light dark:border-border-dark p-6">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary">date_range</span>
+                <h4 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">This Week's Sales</h4>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Revenue</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(weekRevenue)}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Orders</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${weekOrders}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Items Sold</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${weekItems}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Avg Order</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(weekAvg)}</p>
+                </div>
+              </div>
             </div>
+            
+            <!-- This Month's Sales -->
+            <div class="bg-background-light dark:bg-background-dark rounded-xl border border-border-light dark:border-border-dark p-6">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary">calendar_month</span>
+                <h4 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">This Month's Sales</h4>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Revenue</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(monthRevenue)}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Orders</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${monthOrders}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Items Sold</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${monthItems}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Avg Order</p>
+                  <p class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">${formatCurrency(monthAvg)}</p>
+                </div>
+              </div>
+            </div>
+            
+            ${data.daily_sales ? renderDailySalesChart(data.daily_sales) : ""}
           </div>
-          
-          ${data.daily_sales ? renderDailySalesChart(data.daily_sales) : ""}
         `;
       }
 

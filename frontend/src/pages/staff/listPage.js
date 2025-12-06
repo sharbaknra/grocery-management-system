@@ -119,7 +119,11 @@ function staffListPage() {
         const searchTerm = searchInput?.value?.toLowerCase() || "";
         const roleFilterValue = roleFilter?.value || "";
 
-        const filtered = allStaff.filter((staff) => {
+        // Filter to only show staff roles (exclude customers)
+        const staffRoles = ["admin", "manager", "staff", "purchasing"];
+        const staffOnly = allStaff.filter((staff) => staffRoles.includes(staff.role));
+
+        const filtered = staffOnly.filter((staff) => {
           const matchesSearch = !searchTerm || 
             (staff.name || "").toLowerCase().includes(searchTerm) ||
             (staff.email || "").toLowerCase().includes(searchTerm);

@@ -1,5 +1,6 @@
 import { suppliersService } from "../../services/suppliersService.js";
 import { stockService } from "../../services/stockService.js";
+import { reportsService } from "../../services/reportsService.js";
 
 export function registerReorderDashboardPage(register) {
   register("reorder-dashboard", reorderDashboardPage);
@@ -128,8 +129,26 @@ function reorderDashboardPage() {
 
       async function fetchFallbackLowStockGroups() {
         try {
-          const response = await stockService.getLowStock();
-          const items = normalizeLowStockItems(response);
+          // Fetch both low stock and out of stock items
+          const [lowStockResponse, outOfStockResponse] = await Promise.allSettled([
+            stockService.getLowStock(),
+            reportsService.getOutOfStock(),
+          ]);
+          
+          let items = [];
+          
+          if (lowStockResponse.status === "fulfilled") {
+            const response = lowStockResponse.value || {};
+            const lowStockItems = Array.isArray(response) ? response : (response.data?.items || response.items || response.data || []);
+            items = [...items, ...lowStockItems];
+          }
+          
+          if (outOfStockResponse.status === "fulfilled") {
+            const response = outOfStockResponse.value || {};
+            const outOfStockItems = Array.isArray(response) ? response : (response.data?.items || response.items || response.data || []);
+            items = [...items, ...outOfStockItems];
+          }
+          
           if (!items.length) return [];
           return groupBySupplier(items);
         } catch (error) {

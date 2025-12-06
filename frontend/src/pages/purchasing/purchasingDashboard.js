@@ -1,5 +1,6 @@
 import { stockService } from "../../services/stockService.js";
 import { suppliersService } from "../../services/suppliersService.js";
+import { reportsService } from "../../services/reportsService.js";
 
 export function registerPurchasingDashboard(register) {
   register("purchasing-dashboard", purchasingDashboard);
@@ -155,24 +156,36 @@ function purchasingDashboard() {
     async onMount({ navigate }) {
       try {
         // Fetch data in parallel
-        const [lowStockData, suppliersData] = await Promise.allSettled([
+        const [lowStockData, outOfStockData, suppliersData] = await Promise.allSettled([
           stockService.getLowStock(),
+          reportsService.getOutOfStock(),
           suppliersService.list(),
         ]);
 
         // Process low stock data
+        let lowStockItems = [];
         if (lowStockData.status === "fulfilled") {
           const response = lowStockData.value || {};
-          const items = Array.isArray(response) ? response : (response.data?.items || response.items || response.data || []);
-          
-          const lowStock = items.filter(i => (i.quantity || i.stock_quantity || 0) > 0);
-          const outOfStock = items.filter(i => (i.quantity || i.stock_quantity || 0) <= 0);
-          
-          updateKPI("lowStockCount", lowStock.length);
-          updateKPI("outOfStock", outOfStock.length);
-          
-          renderReorderItems(items);
+          lowStockItems = Array.isArray(response) ? response : (response.data?.items || response.items || response.data || []);
         }
+
+        // Process out of stock data
+        let outOfStockItems = [];
+        if (outOfStockData.status === "fulfilled") {
+          const response = outOfStockData.value || {};
+          outOfStockItems = Array.isArray(response) ? response : (response.data?.items || response.items || response.data || []);
+        }
+
+        // Combine all items needing reorder
+        const allReorderItems = [...lowStockItems, ...outOfStockItems];
+        
+        // Update KPIs
+        updateKPI("lowStockCount", lowStockItems.length);
+        updateKPI("outOfStock", outOfStockItems.length);
+        updateKPI("pendingOrders", allReorderItems.length);
+        
+        // Render combined items
+        renderReorderItems(allReorderItems);
 
         // Process suppliers data
         if (suppliersData.status === "fulfilled") {

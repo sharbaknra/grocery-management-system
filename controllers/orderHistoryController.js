@@ -25,6 +25,12 @@ const orderHistoryController = {
           const items = await OrderItem.getByOrderId(order.order_id);
           return {
             ...order,
+            // Normalize field names for frontend compatibility
+            id: order.order_id,
+            total_amount: parseFloat(order.total_price || 0),
+            total: parseFloat(order.total_price || 0),
+            tax: parseFloat(order.tax_applied || 0),
+            discount: parseFloat(order.discount_applied || 0),
             items: items.map((item) => ({
               order_item_id: item.order_item_id,
               product_id: item.product_id,
@@ -33,6 +39,9 @@ const orderHistoryController = {
               product_category: item.product_category,
               quantity: item.quantity,
               unit_price_at_sale: parseFloat(item.unit_price_at_sale), // Critical: price at time of sale
+              // Normalize field names for frontend compatibility
+              price: parseFloat(item.unit_price_at_sale),
+              unit_price: parseFloat(item.unit_price_at_sale),
               item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
             })),
             item_count: items.length,
@@ -71,6 +80,12 @@ const orderHistoryController = {
           const items = await OrderItem.getByOrderId(order.order_id);
           return {
             ...order,
+            // Normalize field names for frontend compatibility
+            id: order.order_id,
+            total_amount: parseFloat(order.total_price || 0),
+            total: parseFloat(order.total_price || 0),
+            tax: parseFloat(order.tax_applied || 0),
+            discount: parseFloat(order.discount_applied || 0),
             items: items.map((item) => ({
               order_item_id: item.order_item_id,
               product_id: item.product_id,
@@ -79,6 +94,9 @@ const orderHistoryController = {
               product_category: item.product_category,
               quantity: item.quantity,
               unit_price_at_sale: parseFloat(item.unit_price_at_sale), // Critical: price at time of sale
+              // Normalize field names for frontend compatibility
+              price: parseFloat(item.unit_price_at_sale),
+              unit_price: parseFloat(item.unit_price_at_sale),
               item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
             })),
             item_count: items.length,
@@ -134,6 +152,12 @@ const orderHistoryController = {
 
       const orderWithItems = {
         ...order,
+        // Normalize field names for frontend compatibility
+        id: order.order_id,
+        total_amount: parseFloat(order.total_price || 0),
+        total: parseFloat(order.total_price || 0),
+        tax: parseFloat(order.tax_applied || 0),
+        discount: parseFloat(order.discount_applied || 0),
         items: items.map((item) => ({
           order_item_id: item.order_item_id,
           product_id: item.product_id,
@@ -142,6 +166,9 @@ const orderHistoryController = {
           product_category: item.product_category,
           quantity: item.quantity,
           unit_price_at_sale: parseFloat(item.unit_price_at_sale),
+          // Normalize field names for frontend compatibility
+          price: parseFloat(item.unit_price_at_sale),
+          unit_price: parseFloat(item.unit_price_at_sale),
           item_total: parseFloat(item.unit_price_at_sale) * item.quantity,
         })),
         item_count: items.length,

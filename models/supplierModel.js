@@ -122,7 +122,7 @@ const Supplier = {
 
   getReorderList: async (supplierId = null) => {
     const params = [];
-    const supplierFilter = supplierId ? "AND sup.id = ?" : "";
+    const supplierFilter = supplierId ? "AND p.supplier_id = ?" : "";
     if (supplierId) {
       params.push(supplierId);
     }
@@ -143,13 +143,13 @@ const Supplier = {
         s.min_stock_level,
         (s.min_stock_level - s.quantity) AS shortage,
         GREATEST((s.min_stock_level * 2) - s.quantity, s.min_stock_level - s.quantity, 0) AS suggested_order_quantity
-      FROM suppliers sup
-      INNER JOIN products p ON p.supplier_id = sup.id
+      FROM products p
       INNER JOIN stock s ON s.product_id = p.id
+      LEFT JOIN suppliers sup ON p.supplier_id = sup.id
       WHERE s.min_stock_level > 0
         AND s.quantity <= s.min_stock_level
         ${supplierFilter}
-      ORDER BY sup.name ASC, shortage DESC
+      ORDER BY COALESCE(sup.name, 'No Supplier') ASC, shortage DESC
     `;
     const [rows] = await db.promise().query(sql, params);
     return rows;

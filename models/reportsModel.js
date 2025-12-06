@@ -48,6 +48,20 @@ const Reports = {
     const [weekResult] = await db.promise().query(weekSql);
     const [monthResult] = await db.promise().query(monthSql);
 
+    // Get total products count
+    const productsCountSql = `SELECT COUNT(*) AS total_products FROM products`;
+    const [productsResult] = await db.promise().query(productsCountSql);
+    // Handle BigInt or string conversion
+    const countValue = productsResult[0]?.total_products;
+    const totalProducts = countValue ? Number(countValue) : 0;
+    
+    // Debug logging (remove in production)
+    if (process.env.NODE_ENV === "development") {
+      console.log("Products count query result:", productsResult);
+      console.log("Count value:", countValue, "Type:", typeof countValue);
+      console.log("Total products calculated:", totalProducts);
+    }
+
     return {
       today: {
         revenue: parseFloat(todayResult[0].revenue) || 0,
@@ -64,6 +78,7 @@ const Reports = {
         orders: parseInt(monthResult[0].orders) || 0,
         items_sold: parseInt(monthResult[0].items_sold) || 0,
       },
+      totalProducts: totalProducts,
     };
   },
 

@@ -175,7 +175,9 @@ function orderDetailPage() {
 
       try {
         showLoading();
-        const order = await ordersService.getById(orderId);
+        const response = await ordersService.getById(orderId);
+        // Handle response structure: { success: true, data: { order: {...} } }
+        const order = response?.data?.order || response?.order || response;
         renderOrder(order);
         showContent();
       } catch (error) {
@@ -192,9 +194,15 @@ function orderDetailPage() {
 }
 
 function renderOrder(order) {
-  // Header
-  setText("[data-order-id]", `#${order.id}`);
-  setText("[data-order-title]", `#${order.id}`);
+  if (!order) {
+    console.error("Order data is missing");
+    return;
+  }
+
+  // Header - handle both id and order_id
+  const orderId = order.id || order.order_id;
+  setText("[data-order-id]", `#${orderId}`);
+  setText("[data-order-title]", `#${orderId}`);
   
   const date = new Date(order.created_at || order.order_date);
   setText("[data-order-date]", `Placed on ${date.toLocaleDateString("en-US", {
@@ -233,14 +241,14 @@ function renderOrder(order) {
 
   // Summary
   const subtotal = items.reduce((sum, item) => {
-    const price = parseFloat(item.price || item.unit_price) || 0;
+    const price = parseFloat(item.price || item.unit_price || item.unit_price_at_sale) || 0;
     const qty = item.quantity || 1;
     return sum + (price * qty);
   }, 0);
   
-  const tax = parseFloat(order.tax) || subtotal * 0.08;
-  const discount = parseFloat(order.discount) || 0;
-  const total = parseFloat(order.total_amount || order.total) || (subtotal + tax - discount);
+  const tax = parseFloat(order.tax || order.tax_applied) || subtotal * 0.08;
+  const discount = parseFloat(order.discount || order.discount_applied) || 0;
+  const total = parseFloat(order.total_amount || order.total || order.total_price) || (subtotal + tax - discount);
 
   setText("[data-subtotal]", formatCurrency(subtotal));
   setText("[data-tax]", formatCurrency(tax));
@@ -264,14 +272,14 @@ function renderItems(items) {
   }
 
   tbody.innerHTML = items.map((item) => {
-    const price = parseFloat(item.price || item.unit_price) || 0;
+    const price = parseFloat(item.price || item.unit_price || item.unit_price_at_sale) || 0;
     const qty = item.quantity || 1;
     const total = price * qty;
 
     return `
       <tr class="hover:bg-background-light dark:hover:bg-background-dark transition-colors">
         <td class="px-6 py-4 whitespace-nowrap">
-          <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${item.name || item.product_name}</span>
+          <span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${item.name || item.product_name || 'Unknown Product'}</span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-center">
           <span class="text-sm text-text-primary-light dark:text-text-primary-dark">${qty}</span>

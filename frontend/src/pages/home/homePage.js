@@ -5,18 +5,18 @@ export function registerHomePage(register) {
 function homePage() {
   return {
     html: `
-      <div class="min-h-screen bg-gradient-to-br from-background-light via-surface-light to-secondary/10 dark:from-background-dark dark:via-surface-dark dark:to-secondary/5">
+      <div class="min-h-screen bg-background-light dark:bg-background-dark">
         <!-- Navigation -->
         <nav class="fixed top-0 left-0 right-0 z-50 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md border-b border-border-light dark:border-border-dark">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
               <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg">
-                  <span class="text-white text-xl">🛒</span>
+                <div class="flex items-center justify-center w-9 h-9 rounded-md bg-primary text-white font-bold text-lg">
+                  G
                 </div>
-                <div>
-                  <span class="font-black text-xl text-text-primary-light dark:text-text-primary-dark">Grocery</span>
-                  <span class="font-black text-xl text-primary">MS</span>
+                <div class="flex flex-col leading-tight">
+                  <span class="font-semibold text-base text-text-primary-light dark:text-text-primary-dark tracking-tight">Grocery Management System</span>
+                  <span class="text-[11px] text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-[0.18em]">Retail Dashboard</span>
                 </div>
               </div>
               <div class="flex items-center gap-4">
@@ -29,36 +29,38 @@ function homePage() {
         </nav>
 
         <!-- Hero Section -->
-        <section class="relative pt-32 pb-16 lg:pt-40 lg:pb-24 overflow-hidden">
-          <!-- Background decorations -->
-          <div class="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-          <div class="absolute bottom-10 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
-          
+        <section class="relative pt-32 pb-16 lg:pt-40 lg:pb-24 min-h-screen flex items-center justify-center overflow-hidden">
+          <!-- Soft-focus grocery aisle background -->
+          <div 
+            class="absolute inset-0 pointer-events-none"
+            style="background-image: url('https://images.pexels.com/photos/34357798/pexels-photo-34357798.jpeg?auto=compress&cs=tinysrgb&w=1600'); background-size: cover; background-position: center; filter: blur(6px); opacity: 0.8; transform: scale(1.08);">
+          </div>
+
+          <!-- Subtle color overlay to keep palette readable -->
+          <div class="absolute inset-0 bg-background-light/50 dark:bg-background-dark/50 pointer-events-none"></div>
+
+          <!-- Subtle background accent -->
+          <div class="pointer-events-none absolute inset-x-0 top-24 flex justify-center">
+            <div class="h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
+          </div>
           <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-4xl mx-auto">
-              <!-- Badge -->
-              <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-8">
-                <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                <span class="text-sm font-medium text-primary">Grocery Management System</span>
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full">
+                <span class="w-2 h-2 bg-primary rounded-full"></span>
+                <span class="text-xs font-semibold text-primary uppercase tracking-[0.18em]">Welcome to GMS</span>
               </div>
-              
-              <!-- Main Heading -->
-              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-text-primary-light dark:text-text-primary-dark leading-tight mb-6">
-                Complete Store
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent">Management</span>
-                <br/>Solution
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-text-primary-light dark:text-text-primary-dark tracking-tight uppercase">
+                Grocery Management System
               </h1>
-              
-              <!-- Subtitle -->
-              <p class="text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mx-auto mb-12">
-                A unified platform for inventory management, point-of-sale operations, supplier tracking, and comprehensive reporting.
+              <p class="text-base sm:text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-xl mx-auto">
+                A simple, modern dashboard to manage your store’s inventory, sales, suppliers, and staff in one place.
               </p>
             </div>
           </div>
         </section>
 
         <!-- Role Cards Section -->
-        <section class="py-16 lg:py-24">
+        <section class="py-16 lg:py-24 mt-20">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
               <h2 class="text-3xl lg:text-4xl font-black text-text-primary-light dark:text-text-primary-dark mb-4">
@@ -74,7 +76,7 @@ function homePage() {
               <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-primary p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full"></div>
                 <div class="relative flex flex-col flex-1">
-                  <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary-hover rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-white">admin_panel_settings</span>
                   </div>
                   <h3 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-3">Store Manager</h3>
@@ -113,7 +115,7 @@ function homePage() {
               <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-accent p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full"></div>
                 <div class="relative flex flex-col flex-1">
-                  <div class="w-16 h-16 bg-gradient-to-br from-accent to-amber-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <div class="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-white">point_of_sale</span>
                   </div>
                   <h3 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-3">Staff</h3>
@@ -152,7 +154,7 @@ function homePage() {
               <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-secondary p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-full"></div>
                 <div class="relative flex flex-col flex-1">
-                  <div class="w-16 h-16 bg-gradient-to-br from-secondary to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-white">local_shipping</span>
                   </div>
                   <h3 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-3">Purchasing Agent</h3>
@@ -229,7 +231,7 @@ function homePage() {
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
               <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg">
+                <div class="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
                   <span class="text-white text-sm">🛒</span>
                 </div>
                 <span class="font-bold text-white">Grocery MS</span>
