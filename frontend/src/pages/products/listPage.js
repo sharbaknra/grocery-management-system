@@ -95,6 +95,7 @@ function productsListPage() {
 
     async onMount({ navigate }) {
       const searchForm = document.querySelector("[data-search-form]");
+      const searchInput = searchForm?.querySelector('input[name="search"]');
       const productsGrid = document.querySelector("[data-products-grid]");
       let debounceTimer = null;
 
@@ -102,7 +103,19 @@ function productsListPage() {
       async function loadProducts(params = {}) {
         try {
           renderLoading();
-          const data = await productsService.list(params);
+          // Map 'search' to 'name' for backend compatibility
+          const apiParams = {};
+          const searchTerm = params.search?.trim();
+          if (searchTerm) {
+            apiParams.name = searchTerm;
+          }
+          if (params.category) {
+            apiParams.category = params.category;
+          }
+          if (params.sort) {
+            apiParams.sort = params.sort;
+          }
+          const data = await productsService.list(apiParams);
           const products = Array.isArray(data) ? data : data.products || [];
           renderProducts(products);
         } catch (error) {
@@ -253,25 +266,35 @@ function productsListPage() {
         };
       }
 
-      // Search form handler with debounce
-      searchForm?.addEventListener("input", (e) => {
+      // Search input handler with debounce
+      searchInput?.addEventListener("input", (e) => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const formData = new FormData(searchForm);
           const params = {};
           for (const [key, value] of formData.entries()) {
-            if (value) params[key] = value;
+            // Include search even if empty (to clear filter), but skip empty other fields
+            if (key === "search") {
+              params[key] = value;
+            } else if (value) {
+              params[key] = value;
+            }
           }
           loadProducts(params);
         }, 300);
       });
 
+      // Category and sort change handlers
       searchForm?.addEventListener("change", (e) => {
         if (e.target.tagName === "SELECT") {
           const formData = new FormData(searchForm);
           const params = {};
           for (const [key, value] of formData.entries()) {
-            if (value) params[key] = value;
+            if (key === "search") {
+              params[key] = value;
+            } else if (value) {
+              params[key] = value;
+            }
           }
           loadProducts(params);
         }

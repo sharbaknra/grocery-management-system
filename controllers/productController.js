@@ -80,19 +80,25 @@ const productController = {
         maxPrice 
       } = req.query;
 
-      // 1) Search by name
+      // 1) Combined search and category filter
+      if (name && category) {
+        const products = await Product.searchWithFilters(name, category);
+        return res.status(200).json(products);
+      }
+
+      // 2) Search by name only
       if (name) {
         const products = await Product.search(name);
         return res.status(200).json(products);
       }
 
-      // 2) Filter by category
+      // 3) Filter by category only
       if (category) {
         const products = await Product.filterByCategory(category);
         return res.status(200).json(products);
       }
 
-      // 3) Filter by price range
+      // 4) Filter by price range
       if (minPrice && maxPrice) {
         const min = parseFloat(minPrice);
         const max = parseFloat(maxPrice);
@@ -105,7 +111,7 @@ const productController = {
         return res.status(200).json(products);
       }
 
-      // 4) Default: return all products
+      // 5) Default: return all products
       const products = await Product.getAll();
       res.status(200).json(products);
 

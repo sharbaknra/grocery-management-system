@@ -50,6 +50,32 @@ function reorderDashboardPage() {
             View Products
           </button>
         </div>
+
+        <!-- Quantity Input Modal -->
+        <div data-quantity-modal class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-border-light dark:border-border-dark">
+              <h2 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Enter Restock Quantities</h2>
+              <button data-close-modal class="text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6">
+              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">Enter the quantity to restock for each product:</p>
+              <div data-quantity-inputs class="space-y-4">
+                <!-- Quantity inputs will be inserted here -->
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 p-6 border-t border-border-light dark:border-border-dark">
+              <button data-cancel-modal class="px-4 py-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors">
+                Cancel
+              </button>
+              <button data-submit-order class="px-6 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors">
+                Create Purchase Order
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     `,
 
@@ -60,7 +86,8 @@ function reorderDashboardPage() {
       const orderCountEl = document.querySelector("[data-order-count]");
       const fallbackBanner = document.querySelector("[data-fallback-banner]");
 
-      let reorderItems = new Set();
+      let reorderItems = new Set(); // Store product IDs
+      let reorderItemsData = new Map(); // Store product details: { productId: { productId, quantity, productName } }
 
       function showLoading() {
         loadingEl?.classList.remove("hidden");
@@ -93,6 +120,7 @@ function reorderDashboardPage() {
           showLoading();
           fallbackBanner?.classList.add("hidden");
           reorderItems = new Set();
+          reorderItemsData = new Map();
           updateOrderCount();
 
           const dashboardGroups = await fetchDashboardGroups();
@@ -190,8 +218,12 @@ function reorderDashboardPage() {
         return Object.values(groups);
       }
 
+      // Store groups globally so we can access them in handlers
+      let currentGroups = [];
+
       function renderSupplierGroups(groups) {
         if (!contentEl) return;
+        currentGroups = groups; // Store for later use
 
         contentEl.innerHTML = groups.map((group, index) => {
           // Support both backend dashboard shape (items[]) and fallback shape (products[])
@@ -234,7 +266,8 @@ function reorderDashboardPage() {
                         const qty = product.stock_quantity || product.quantity || 0;
                         const min = product.min_stock_level || 10;
                         const shortage = Math.max(0, min - qty);
-                        const suggested = Math.max(shortage, min);
+                        // Use suggested_order_quantity from backend if available, otherwise calculate
+                        const suggested = product.suggested_order_quantity || Math.max(shortage, min);
                         const productId = product.id || product.product_id;
                         const isAdded = reorderItems.has(productId);
 
@@ -280,17 +313,40 @@ function reorderDashboardPage() {
         // Add individual product
         document.querySelectorAll("[data-add-product]").forEach((btn) => {
           btn.addEventListener("click", () => {
-            const productId = btn.dataset.addProduct;
-            reorderItems.add(productId);
-            updateOrderCount();
+            const productId = parseInt(btn.dataset.addProduct);
             
-            // Update button to "Added"
-            btn.outerHTML = `
-              <div class="flex items-center gap-1 text-success text-sm font-bold">
-                <span class="material-symbols-outlined text-base fill">check_circle</span>
-                Added
-              </div>
-            `;
+            // Find product details from current groups
+            let productData = null;
+            for (const group of groups) {
+              const products = group.products || group.items || [];
+              const product = products.find(p => (p.id || p.product_id) == productId);
+              if (product) {
+                const qty = product.stock_quantity || product.quantity || 0;
+                const min = product.min_stock_level || 10;
+                const shortage = Math.max(0, min - qty);
+                const suggested = product.suggested_order_quantity || Math.max(shortage, min);
+                productData = {
+                  productId: productId,
+                  quantity: suggested,
+                  productName: product.name || product.product_name,
+                };
+                break;
+              }
+            }
+            
+            if (productData) {
+              reorderItems.add(productId);
+              reorderItemsData.set(productId, productData);
+              updateOrderCount();
+              
+              // Update button to "Added"
+              btn.outerHTML = `
+                <div class="flex items-center gap-1 text-success text-sm font-bold">
+                  <span class="material-symbols-outlined text-base fill">check_circle</span>
+                  Added
+                </div>
+              `;
+            }
           });
         });
 
@@ -306,7 +362,17 @@ function reorderDashboardPage() {
               const products = group.products || group.items || [];
               products.forEach((product) => {
                 const productId = product.id || product.product_id;
+                const qty = product.stock_quantity || product.quantity || 0;
+                const min = product.min_stock_level || 10;
+                const shortage = Math.max(0, min - qty);
+                const suggested = product.suggested_order_quantity || Math.max(shortage, min);
+                
                 reorderItems.add(productId);
+                reorderItemsData.set(productId, {
+                  productId: productId,
+                  quantity: suggested,
+                  productName: product.name || product.product_name,
+                });
               });
               updateOrderCount();
               
@@ -317,14 +383,156 @@ function reorderDashboardPage() {
         });
       }
 
+      // Modal functions
+      function showQuantityModal() {
+        const modal = document.querySelector("[data-quantity-modal]");
+        const inputsContainer = document.querySelector("[data-quantity-inputs]");
+        
+        if (!modal || !inputsContainer) return;
+
+        // Clear previous inputs
+        inputsContainer.innerHTML = "";
+
+        // Create input fields for each product
+        Array.from(reorderItemsData.values()).forEach((item) => {
+          const inputHtml = `
+            <div class="flex items-center justify-between gap-4 p-4 bg-background-light dark:bg-background-dark rounded-lg border border-border-light dark:border-border-dark">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${item.productName}</p>
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Suggested: ${item.quantity}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-sm text-text-secondary-light dark:text-text-secondary-dark">Qty:</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  value="${item.quantity}"
+                  data-product-quantity="${item.productId}"
+                  class="w-24 px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                />
+              </div>
+            </div>
+          `;
+          inputsContainer.insertAdjacentHTML("beforeend", inputHtml);
+        });
+
+        modal.classList.remove("hidden");
+      }
+
+      function hideQuantityModal() {
+        const modal = document.querySelector("[data-quantity-modal]");
+        if (modal) {
+          modal.classList.add("hidden");
+        }
+      }
+
+      // Modal event handlers
+      document.querySelector("[data-close-modal]")?.addEventListener("click", hideQuantityModal);
+      document.querySelector("[data-cancel-modal]")?.addEventListener("click", hideQuantityModal);
+
+      // Close modal on backdrop click
+      document.querySelector("[data-quantity-modal]")?.addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) {
+          hideQuantityModal();
+        }
+      });
+
+      // Submit order from modal
+      document.querySelector("[data-submit-order]")?.addEventListener("click", async () => {
+        const quantityInputs = document.querySelectorAll("[data-product-quantity]");
+        const items = [];
+
+        // Validate and collect quantities
+        let isValid = true;
+        quantityInputs.forEach((input) => {
+          const productId = parseInt(input.dataset.productQuantity);
+          const quantity = parseInt(input.value);
+
+          if (!quantity || quantity < 1) {
+            isValid = false;
+            input.classList.add("ring-2", "ring-danger");
+            setTimeout(() => input.classList.remove("ring-2", "ring-danger"), 2000);
+          } else {
+            items.push({
+              productId: productId,
+              quantity: quantity,
+            });
+          }
+        });
+
+        if (!isValid) {
+          alert("Please enter valid quantities (minimum 1) for all products.");
+          return;
+        }
+
+        // Hide modal
+        hideQuantityModal();
+
+        // Show loading state
+        const reviewBtn = document.querySelector("[data-review-order]");
+        if (reviewBtn) {
+          reviewBtn.disabled = true;
+          reviewBtn.innerHTML = `
+            <span class="material-symbols-outlined text-lg animate-spin">sync</span>
+            <span>Processing...</span>
+          `;
+        }
+
+        try {
+          // Call bulk restock API
+          console.log("Calling bulk restock with items:", items);
+          const response = await stockService.bulkRestock({ items });
+          console.log("Bulk restock response:", response);
+          
+          if (response && response.success) {
+            const { successful, failed } = response.data || {};
+            
+            // Show success message
+            let message = `Purchase order completed! Successfully restocked ${successful?.length || 0} product(s).`;
+            if (failed && failed.length > 0) {
+              message += `\n\n${failed.length} product(s) failed to restock:\n${failed.map(f => `- Product ${f.productId}: ${f.error}`).join('\n')}`;
+            }
+            alert(message);
+
+            // Clear reorder items
+            reorderItems = new Set();
+            reorderItemsData = new Map();
+            updateOrderCount();
+
+            // Reload data to reflect updated stock levels
+            await loadReorderData();
+          } else {
+            const errorMsg = response?.message || response?.details?.message || 'Unknown error';
+            console.error("Bulk restock failed:", response);
+            alert(`Failed to create purchase order: ${errorMsg}`);
+          }
+        } catch (error) {
+          console.error("Error creating purchase order:", error);
+          const errorMsg = error.message || error.statusText || 'Unknown error';
+          const status = error.status ? ` (Status: ${error.status})` : '';
+          alert(`Failed to create purchase order: ${errorMsg}${status}\n\nPlease ensure the server is running and has been restarted to include the new endpoint.`);
+        } finally {
+          // Restore button
+          if (reviewBtn) {
+            reviewBtn.disabled = false;
+            reviewBtn.innerHTML = `
+              <span class="material-symbols-outlined text-lg">shopping_cart</span>
+              <span>Review Order (<span data-order-count>${reorderItems.size}</span> items)</span>
+            `;
+          }
+        }
+      });
+
       // Review order button
       document.querySelector("[data-review-order]")?.addEventListener("click", () => {
         if (reorderItems.size === 0) {
           alert("No items added to order yet. Click 'Add' on products you want to reorder.");
           return;
         }
-        // In a real app, this would navigate to a purchase order page
-        alert(`${reorderItems.size} items ready for purchase order. This feature would create a purchase order in a full implementation.`);
+
+        // Show quantity input modal
+        showQuantityModal();
       });
 
       // Initial load

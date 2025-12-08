@@ -13,6 +13,10 @@ export const stockService = {
     return apiClient.post("/stock/restock", payload);
   },
 
+  bulkRestock(payload) {
+    return apiClient.post("/stock/bulk-restock", payload);
+  },
+
   reduce(payload) {
     return apiClient.post("/stock/reduce", payload);
   },
