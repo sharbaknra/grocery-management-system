@@ -146,21 +146,24 @@ const supplierController = {
     try {
       const rows = await Supplier.getReorderList();
       const grouped = rows.reduce((acc, row) => {
-        if (!acc[row.supplier_id]) {
-          acc[row.supplier_id] = {
-            supplier_id: row.supplier_id,
-            supplier_name: row.supplier_name,
-            contact_name: row.contact_name,
-            phone: row.phone,
-            email: row.email,
-            lead_time_days: row.lead_time_days,
-            min_order_amount: parseFloat(row.min_order_amount),
+        // Use supplier_id or a special key for products without suppliers
+        const groupKey = row.supplier_id || 'no_supplier';
+        
+        if (!acc[groupKey]) {
+          acc[groupKey] = {
+            supplier_id: row.supplier_id || null,
+            supplier_name: row.supplier_name || "No Supplier",
+            contact_name: row.contact_name || null,
+            phone: row.phone || null,
+            email: row.email || null,
+            lead_time_days: row.lead_time_days || null,
+            min_order_amount: row.min_order_amount ? parseFloat(row.min_order_amount) : 0,
             items: [],
             total_shortage: 0,
             total_suggested_quantity: 0,
           };
         }
-        acc[row.supplier_id].items.push({
+        acc[groupKey].items.push({
           product_id: row.product_id,
           product_name: row.product_name,
           category: row.category,
@@ -169,8 +172,8 @@ const supplierController = {
           shortage: row.shortage,
           suggested_order_quantity: row.suggested_order_quantity,
         });
-        acc[row.supplier_id].total_shortage += row.shortage;
-        acc[row.supplier_id].total_suggested_quantity += row.suggested_order_quantity;
+        acc[groupKey].total_shortage += row.shortage;
+        acc[groupKey].total_suggested_quantity += row.suggested_order_quantity;
         return acc;
       }, {});
 

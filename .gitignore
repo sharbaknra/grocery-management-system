@@ -60,9 +60,15 @@ test-module-*.js
 # Comprehensive test files (keep for reference but can be excluded)
 # test-backend-comprehensive*.js
 
-# Project-specific (as per original)
-modules.md
-logging-instructions.md
+# Project-specific
+# One-time SQL fix scripts
+update_*.sql
+*_fix_*.sql
+
+# Mockup directories (design references, not used in app)
+frontend/ui/
+frontend/src/components/templates/mockups/
+frontend/src/pages/mockups/
 
 # Keep these (commented for reference)
 # .env.example - Should be committed

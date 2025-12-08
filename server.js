@@ -32,6 +32,14 @@ app.use('/api/orders/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reports', reportsRoutes);
 
+// === 404 HANDLER ===
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.path}`,
+  });
+});
+
 // === ERROR HANDLING MIDDLEWARE ===
 app.use((err, req, res, next) => {
   // Handle JSON parse errors (malformed JSON in request body)

@@ -47,7 +47,7 @@ router.get(
 router.get(
   "/inventory/low-stock",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "staff", "purchasing"),
   reportsController.getLowStock
 );
 
@@ -55,7 +55,7 @@ router.get(
 router.get(
   "/inventory/out-of-stock",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "staff", "purchasing"),
   reportsController.getOutOfStock
 );
 
@@ -63,7 +63,7 @@ router.get(
 router.get(
   "/inventory/expiring",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "staff", "purchasing"),
   reportsController.getExpiringProducts
 );
 
@@ -71,7 +71,7 @@ router.get(
 router.get(
   "/inventory/valuation",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "staff", "purchasing"),
   reportsController.getInventoryValuation
 );
 
@@ -109,7 +109,7 @@ router.get(
 router.get(
   "/export/csv",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "staff", "purchasing"),
   reportsController.exportCSV
 );
 
@@ -117,7 +117,7 @@ router.get(
 router.get(
   "/export/pdf",
   verifyToken,
-  allowRoles("admin", "staff"),
+  allowRoles("admin", "staff", "purchasing"),
   reportsController.exportPDF
 );
 

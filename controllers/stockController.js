@@ -165,6 +165,103 @@ const stockController = {
       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
   },
+
+  bulkRestock: async (req, res) => {
+    try {
+      const { items } = req.body; // Array of { productId, quantity }
+
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "items must be a non-empty array of { productId, quantity } objects.",
+        });
+      }
+
+      const results = [];
+      const errors = [];
+
+      // Process each item
+      for (const item of items) {
+        const productId = parsePositiveInteger(item.productId);
+        const quantity = parsePositiveInteger(item.quantity);
+
+        if (!productId || !quantity) {
+          errors.push({
+            productId: item.productId,
+            error: "productId and quantity must be positive integers.",
+          });
+          continue;
+        }
+
+        try {
+          const product = await Product.getById(productId);
+          if (!product) {
+            errors.push({
+              productId,
+              error: "Product not found.",
+            });
+            continue;
+          }
+
+          const stockRecord = await Stock.getByProductId(productId);
+          if (!stockRecord) {
+            errors.push({
+              productId,
+              error: "Stock entry not initialized for this product.",
+            });
+            continue;
+          }
+
+          const result = await Stock.restock(productId, quantity);
+          if (result.affectedRows === 0) {
+            errors.push({
+              productId,
+              error: "Unable to restock inventory.",
+            });
+            continue;
+          }
+
+          // Log stock movement
+          try {
+            await Stock.logMovement(productId, req.user.id, quantity, "Purchase Order Restock");
+          } catch (logError) {
+            console.error(`Error logging stock movement for product ${productId}:`, logError);
+          }
+
+          const updatedStock = await Stock.getByProductId(productId);
+
+          results.push({
+            productId,
+            productName: product.name,
+            previousQuantity: stockRecord.quantity,
+            newQuantity: updatedStock.quantity,
+            added: quantity,
+          });
+        } catch (error) {
+          console.error(`Error restocking product ${productId}:`, error);
+          errors.push({
+            productId,
+            error: error.message || "Internal error during restock.",
+          });
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `Successfully restocked ${results.length} product(s).`,
+        data: {
+          successful: results,
+          failed: errors,
+          totalProcessed: items.length,
+          successCount: results.length,
+          failureCount: errors.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error during bulk stock restock:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  },
 };
 
 module.exports = stockController;

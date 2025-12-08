@@ -39,11 +39,11 @@ const Product = {
       data.name,
       data.category,
       data.price,
-      data.barcode,
-      data.description,
-      data.expiry_date,
+      data.barcode || null,
+      data.description || null,
+      data.expiry_date || null, // Convert empty string to null
       data.supplier_id || null,
-      data.image_url,
+      data.image_url || null,
     ];
     const [result] = await db.promise().query(sql, values);
     return result.insertId;
@@ -62,7 +62,7 @@ const Product = {
   },
 
   search: async (searchTerm) => {
-    const sql = `${baseSelect} WHERE p.name LIKE ? ORDER BY p.created_at DESC`;
+    const sql = `${baseSelect} WHERE LOWER(p.name) LIKE LOWER(?) ORDER BY p.created_at DESC`;
     const [rows] = await db.promise().query(sql, [`%${searchTerm}%`]);
     return rows.map(mapProductRow);
   },
@@ -78,11 +78,11 @@ const Product = {
       data.name,
       data.category,
       data.price,
-      data.barcode,
-      data.description,
-      data.expiry_date,
+      data.barcode || null,
+      data.description || null,
+      data.expiry_date || null, // Convert empty string to null
       data.supplier_id || null,
-      data.image_url,
+      data.image_url || null,
       id,
     ];
     const [result] = await db.promise().query(sql, values);
@@ -104,6 +104,30 @@ const Product = {
   filterByPrice: async (minPrice, maxPrice) => {
     const sql = `${baseSelect} WHERE p.price BETWEEN ? AND ?`;
     const [rows] = await db.promise().query(sql, [minPrice, maxPrice]);
+    return rows.map(mapProductRow);
+  },
+
+  searchWithFilters: async (searchTerm, category) => {
+    let sql = baseSelect;
+    const conditions = [];
+    const values = [];
+
+    if (searchTerm) {
+      conditions.push("LOWER(p.name) LIKE LOWER(?)");
+      values.push(`%${searchTerm}%`);
+    }
+
+    if (category) {
+      conditions.push("p.category = ?");
+      values.push(category);
+    }
+
+    if (conditions.length > 0) {
+      sql += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    sql += " ORDER BY p.created_at DESC";
+    const [rows] = await db.promise().query(sql, values);
     return rows.map(mapProductRow);
   },
 };

@@ -1,0 +1,26 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "This directory hosts the vanilla HTML/CSS/JS interface that sits on top of the existing Express + MySQL backend. It is intentionally framework-free so it can be opened directly in a browser or bundled later if needed.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "css:build": "npx tailwindcss -i ./src/styles/input.css -o ./dist/css/app.css --minify",
+    "css:watch": "npx tailwindcss -i ./src/styles/input.css -o ./dist/css/app.css --watch",
+    "build": "npm run css:build",
+    "dev": "npm run css:watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17"
+  }
+}
