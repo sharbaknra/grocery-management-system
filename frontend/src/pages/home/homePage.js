@@ -5,6 +5,11 @@ export function registerHomePage(register) {
 function homePage() {
   return {
     html: `
+      <style>
+        .purchasing-card:hover {
+          border-color: #16a34a !important;
+        }
+      </style>
       <div class="min-h-screen bg-background-light dark:bg-background-dark">
         <!-- Navigation -->
         <nav class="fixed top-0 left-0 right-0 z-50 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-md border-b border-border-light dark:border-border-dark">
@@ -33,7 +38,7 @@ function homePage() {
           <!-- Soft-focus grocery aisle background -->
           <div 
             class="absolute inset-0 pointer-events-none"
-            style="background-image: url('https://images.pexels.com/photos/34357798/pexels-photo-34357798.jpeg?auto=compress&cs=tinysrgb&w=1600'); background-size: cover; background-position: center; filter: blur(6px); opacity: 0.8; transform: scale(1.08);">
+            style="background-image: url('https://images.pexels.com/photos/34357798/pexels-photo-34357798.jpeg?auto=compress&cs=tinysrgb&w=1600'); background-size: cover; background-position: center; filter: blur(6px); opacity: 1; transform: scale(1.08);">
           </div>
 
           <!-- Subtle color overlay to keep palette readable -->
@@ -49,11 +54,11 @@ function homePage() {
                 <span class="w-2 h-2 bg-primary rounded-full"></span>
                 <span class="text-xs font-semibold text-primary uppercase tracking-[0.18em]">Welcome to GMS</span>
               </div>
-              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-text-primary-light dark:text-text-primary-dark tracking-tight uppercase">
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight uppercase" style="color: #1a1a1a;">
                 Grocery Management System
               </h1>
-              <p class="text-base sm:text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-xl mx-auto">
-                A simple, modern dashboard to manage your store’s inventory, sales, suppliers, and staff in one place.
+              <p class="text-base sm:text-lg max-w-xl mx-auto" style="color: #323232;">
+                A simple, modern dashboard to manage your store's inventory, sales, suppliers, and staff in one place.
               </p>
             </div>
           </div>
@@ -151,10 +156,10 @@ function homePage() {
               </div>
               
               <!-- Purchasing Agent -->
-              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark hover:border-secondary p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-full"></div>
+              <div class="group relative bg-surface-light dark:bg-surface-dark rounded-2xl border-2 border-border-light dark:border-border-dark p-8 transition-all hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col purchasing-card">
+                <div class="absolute top-0 right-0 w-32 h-32 rounded-bl-full" style="background-color: rgba(22, 163, 74, 0.05);"></div>
                 <div class="relative flex flex-col flex-1">
-                  <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg" style="background-color: #16a34a;">
                     <span class="material-symbols-outlined text-3xl text-white">local_shipping</span>
                   </div>
                   <h3 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-3">Purchasing Agent</h3>
@@ -182,7 +187,10 @@ function homePage() {
                   <button 
                     data-route="login" 
                     data-route-params='{"role":"purchasing"}'
-                    class="w-full mt-auto flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:bg-green-600 transition-colors">
+                    class="w-full mt-auto flex items-center justify-center gap-2 px-6 py-3 text-white font-bold rounded-xl transition-colors"
+                    style="background-color: #16a34a;"
+                    onmouseover="this.style.backgroundColor='#0f6f32'"
+                    onmouseout="this.style.backgroundColor='#16a34a'">
                     <span>Purchasing Login</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                   </button>
