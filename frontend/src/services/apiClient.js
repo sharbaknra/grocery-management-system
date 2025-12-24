@@ -9,7 +9,7 @@ const UPLOADS_BASE_URL = API_BASE_URL.replace("/api", "/uploads");
  */
 export function getImageUrl(filename) {
   if (!filename) {
-    return "https://via.placeholder.com/300x200?text=No+Image";
+    return null; // Return null instead of placeholder
   }
   // If it's already a full URL, return as-is
   if (filename.startsWith("http://") || filename.startsWith("https://")) {

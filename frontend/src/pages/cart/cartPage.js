@@ -163,14 +163,15 @@ function cartPage() {
           const price = parseFloat(item.price) || 0;
           const quantity = item.quantity || 1;
           const total = price * quantity;
-          const imageUrl = item.image_url || item.product_image || "https://via.placeholder.com/64x64?text=No+Image";
+          const imageUrl = item.image_url || item.product_image;
+          const hasImage = imageUrl && imageUrl.trim() !== '';
 
           return `
             <tr class="hover:bg-background-light dark:hover:bg-background-dark transition-colors" data-item-row="${item.product_id || item.id}">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div 
-                  class="w-16 h-16 rounded-lg bg-center bg-cover bg-no-repeat bg-background-light dark:bg-background-dark"
-                  style="background-image: url('${imageUrl}')"
+                  class="w-16 h-16 rounded-lg bg-center bg-cover bg-no-repeat bg-white dark:bg-background-dark"
+                  ${hasImage ? `style="background-image: url('${imageUrl}')"` : ''}
                 ></div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">

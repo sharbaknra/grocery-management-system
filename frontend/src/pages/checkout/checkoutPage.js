@@ -226,13 +226,14 @@ function checkoutPage() {
           const price = parseFloat(item.price) || 0;
           const quantity = item.quantity || 1;
           const total = price * quantity;
-          const imageUrl = item.image_url || item.product_image || "https://via.placeholder.com/56x56?text=No+Image";
+          const imageUrl = item.image_url || item.product_image;
+          const hasImage = imageUrl && imageUrl.trim() !== '';
 
           return `
             <div class="flex items-center gap-4 bg-background-light dark:bg-background-dark p-4 rounded-lg">
               <div 
-                class="w-14 h-14 rounded-lg bg-center bg-cover bg-no-repeat shrink-0"
-                style="background-image: url('${imageUrl}')"
+                class="w-14 h-14 rounded-lg bg-center bg-cover bg-no-repeat shrink-0 bg-white dark:bg-background-dark"
+                ${hasImage ? `style="background-image: url('${imageUrl}')"` : ''}
               ></div>
               <div class="flex-grow">
                 <p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">${item.name || item.product_name}</p>

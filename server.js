@@ -22,6 +22,36 @@ app.use(cors());
 app.use(express.json()); // ✅ Enables JSON body parsing
 app.use('/uploads', express.static('uploads'));
 
+// === ROOT ROUTE ===
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Grocery Management System API',
+    version: '1.0.0',
+    endpoints: {
+      base: '/api',
+      authentication: '/api/users',
+      products: '/api/products',
+      stock: '/api/stock',
+      suppliers: '/api/suppliers',
+      orders: '/api/orders',
+      reports: '/api/reports',
+      uploads: '/uploads',
+    },
+    documentation: 'See README.md for API documentation',
+  });
+});
+
+// === HEALTH CHECK ===
+app.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 // === ROUTES ===
 app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes);

@@ -681,8 +681,14 @@ const reportsController = {
           });
       }
 
-      // Generate PDF
-      const pdfBuffer = await generatePDF(data, { title, columns, filename });
+      // Generate PDF with theme support
+      // Theme can be passed via options or will use environment variables/defaults
+      const pdfBuffer = await generatePDF(data, {
+        title,
+        columns,
+        filename,
+        theme: req.query.theme ? JSON.parse(decodeURIComponent(req.query.theme)) : undefined,
+      });
 
       // Set response headers for file download
       res.setHeader('Content-Type', 'application/pdf');

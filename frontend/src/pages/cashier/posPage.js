@@ -199,14 +199,17 @@ function posPage() {
             ${products.map(product => {
               const stock = product.stock_quantity || product.quantity || 0;
               const imageUrl = getImageUrl(product.image_url || product.image);
+              const hasImage = product.image_url || product.image;
               
               return `
                 <button 
                   data-add-product="${product.id}"
                   class="flex flex-col bg-background-light dark:bg-background-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden hover:border-primary hover:shadow-lg transition-all group"
                 >
-                  <div class="aspect-square bg-neutral/10 overflow-hidden">
-                    <img src="${imageUrl}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" onerror="this.src='https://via.placeholder.com/200?text=No+Image'" />
+                  <div class="aspect-square bg-white dark:bg-background-dark overflow-hidden">
+                    ${hasImage && imageUrl ? `
+                      <img src="${imageUrl}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" onerror="this.style.display='none';" />
+                    ` : ''}
                   </div>
                   <div class="p-3 text-left">
                     <h4 class="font-medium text-text-primary-light dark:text-text-primary-dark text-sm truncate">${product.name}</h4>

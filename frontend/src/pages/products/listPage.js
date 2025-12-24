@@ -190,20 +190,21 @@ function productsListPage() {
         const price = parseFloat(product.price) || 0;
         const category = product.category || "Uncategorized";
         const hasImage = product.image_url || product.image;
-        const placeholderUrl = "https://via.placeholder.com/400x300?text=No+Image";
 
         return `
           <div class="flex flex-col overflow-hidden rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow">
             <!-- Image -->
-            <div class="relative aspect-[4/3] bg-background-light dark:bg-background-dark overflow-hidden" style="min-height: 200px;">
-              <img 
-                src="${hasImage ? imageUrl : placeholderUrl}" 
-                alt="${product.name}" 
-                class="w-full h-full object-cover"
-                loading="lazy"
-                style="display: block; width: 100%; height: 100%; object-fit: cover;"
-                onerror="this.onerror=null; this.src='${placeholderUrl}';"
-              />
+            <div class="relative aspect-[4/3] bg-white dark:bg-background-dark overflow-hidden" style="min-height: 200px;">
+              ${hasImage ? `
+                <img 
+                  src="${imageUrl}" 
+                  alt="${product.name}" 
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  style="display: block; width: 100%; height: 100%; object-fit: cover;"
+                  onerror="this.style.display='none';"
+                />
+              ` : ''}
               <span class="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full ${stockStatus.class} px-2.5 py-1 text-xs font-medium">
                 <span class="w-1.5 h-1.5 rounded-full ${stockStatus.dotClass}"></span>
                 ${stockStatus.label}
