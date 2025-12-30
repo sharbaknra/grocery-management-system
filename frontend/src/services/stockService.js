@@ -20,5 +20,9 @@ export const stockService = {
   reduce(payload) {
     return apiClient.post("/stock/reduce", payload);
   },
+
+  setQuantity(payload) {
+    return apiClient.post("/stock/set-quantity", payload);
+  },
 };
 

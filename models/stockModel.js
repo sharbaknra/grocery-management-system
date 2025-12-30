@@ -38,6 +38,17 @@ const Stock = {
     return result;
   },
 
+  // Set quantity to a specific value (used by /set-quantity)
+  setQuantity: async (productId, quantity) => {
+    const sql = `
+            UPDATE stock
+            SET quantity = ?, last_restock_date = NOW()
+            WHERE product_id = ?
+        `;
+    const [result] = await db.promise().query(sql, [quantity, productId]);
+    return result;
+  },
+
   // Get low stock items (Module 2.8.3)
   // Returns products where quantity > 0 AND quantity < min_stock_level AND min_stock_level > 0
   // (Items with quantity = 0 are "Out of Stock", not "Low Stock")

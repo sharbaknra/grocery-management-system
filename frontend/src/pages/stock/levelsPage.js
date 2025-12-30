@@ -89,7 +89,10 @@ function stockLevelsPage() {
         <div data-update-modal class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div class="bg-surface-light dark:bg-surface-dark rounded-xl p-6 max-w-md w-full shadow-xl">
             <h3 class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-1">Update Quantity</h3>
-            <p data-modal-product-name class="text-text-secondary-light dark:text-text-secondary-dark mb-6">Product Name</p>
+            <p data-modal-product-name class="text-text-secondary-light dark:text-text-secondary-dark mb-2">Product Name</p>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-6">
+              Current Quantity: <span data-modal-current-quantity class="font-semibold">-</span>
+            </p>
             
             <form data-update-form class="space-y-4">
               <input type="hidden" name="product_id" />
@@ -104,6 +107,10 @@ function stockLevelsPage() {
                   <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border border-border-light dark:border-border-dark cursor-pointer has-[:checked]:border-danger has-[:checked]:bg-danger/5">
                     <input type="radio" name="adjustment_type" value="reduce" class="form-radio text-danger focus:ring-danger" />
                     <span class="text-sm font-medium">Reduce (-)</span>
+                  </label>
+                  <label class="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border border-border-light dark:border-border-dark cursor-pointer has-[:checked]:border-success has-[:checked]:bg-success/5">
+                    <input type="radio" name="adjustment_type" value="set" class="form-radio text-success focus:ring-success" />
+                    <span class="text-sm font-medium">Set New Qty</span>
                   </label>
                 </div>
               </div>
@@ -277,6 +284,7 @@ function stockLevelsPage() {
                 <button 
                   data-update-stock="${product.id}"
                   data-product-name="${product.name}"
+                  data-current-quantity="${qty}"
                   class="text-sm font-medium text-primary hover:underline"
                 >
                   Update quantity
@@ -292,7 +300,8 @@ function stockLevelsPage() {
           btn.addEventListener("click", () => {
             const productId = btn.dataset.updateStock;
             const productName = btn.dataset.productName;
-            openUpdateModal(productId, productName);
+            const currentQuantity = btn.dataset.currentQuantity || "0";
+            openUpdateModal(productId, productName, currentQuantity);
           });
         });
       }
@@ -319,16 +328,22 @@ function stockLevelsPage() {
         };
       }
 
-      function openUpdateModal(productId, productName) {
+      function openUpdateModal(productId, productName, currentQuantity) {
         const nameEl = document.querySelector("[data-modal-product-name]");
+        const currentQtyEl = document.querySelector("[data-modal-current-quantity]");
         const productIdInput = updateForm?.querySelector('input[name="product_id"]');
         
         if (nameEl) nameEl.textContent = productName;
+        if (currentQtyEl) currentQtyEl.textContent = currentQuantity || "0";
         if (productIdInput) productIdInput.value = productId;
         
         // Reset form
         updateForm?.reset();
         if (productIdInput) productIdInput.value = productId;
+        
+        // Reset adjustment type to restock
+        const restockRadio = updateForm?.querySelector('input[name="adjustment_type"][value="restock"]');
+        if (restockRadio) restockRadio.checked = true;
         
         updateModal?.classList.remove("hidden");
         updateModal?.classList.add("flex");
@@ -371,8 +386,10 @@ function stockLevelsPage() {
 
           if (adjustmentType === "restock") {
             await stockService.restock(payload);
-          } else {
+          } else if (adjustmentType === "reduce") {
             await stockService.reduce(payload);
+          } else if (adjustmentType === "set") {
+            await stockService.setQuantity(payload);
           }
 
           closeUpdateModal();
