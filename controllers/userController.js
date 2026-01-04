@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const { tokenBlacklist } = require('../utils/tokenBlacklist');
 
 const userController = {
   register: async (req, res) => {
@@ -62,6 +63,22 @@ const userController = {
       res.status(200).json({ message: 'Login successful!', token });
     } catch (error) {
       console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  },
+
+  logout: async (req, res) => {
+    try {
+      // Get token from Authorization header
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        // Add token to blacklist
+        tokenBlacklist.push(token);
+      }
+      res.status(200).json({ message: 'Logout successful!' });
+    } catch (error) {
+      console.error('Logout error:', error);
       res.status(500).json({ error: 'Server error' });
     }
   },

@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -22,8 +23,18 @@ app.use(cors());
 app.use(express.json()); // ✅ Enables JSON body parsing
 app.use('/uploads', express.static('uploads'));
 
-// === ROOT ROUTE ===
+// === SERVE FRONTEND STATIC FILES ===
+app.use(express.static(path.join(__dirname, 'frontend')));
+app.use('/src', express.static(path.join(__dirname, 'frontend/src')));
+app.use('/dist', express.static(path.join(__dirname, 'frontend/dist')));
+
+// === ROOT ROUTE - SERVE FRONTEND ===
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+// === API INFO ENDPOINT ===
+app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: 'Grocery Management System API',

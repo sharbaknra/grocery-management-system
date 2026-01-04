@@ -151,6 +151,28 @@ function posPage() {
       const clearCartBtn = document.querySelector("[data-clear-cart]");
       const successModal = document.querySelector("[data-success-modal]");
       
+      // Load cart from database on mount
+      async function loadCart() {
+        try {
+          const cartData = await cartService.getCart();
+          cart = (cartData.items || []).map(item => ({
+            product: {
+              id: item.product_id,
+              name: item.product_name,
+              price: item.current_price,
+              image_url: item.product_image,
+              stock_quantity: item.available_stock || item.quantity || 0
+            },
+            quantity: item.quantity
+          }));
+          renderCart();
+        } catch (error) {
+          console.error("Failed to load cart:", error);
+          cart = [];
+          renderCart();
+        }
+      }
+      
       // Load products
       async function loadProducts(search = "", category = "") {
         try {
@@ -231,46 +253,67 @@ function posPage() {
         });
       }
       
-      function addToCart(productId) {
+      async function addToCart(productId) {
         const product = products.find(p => p.id === productId);
         if (!product) return;
         
         const existingItem = cart.find(item => item.product.id === productId);
         const stock = product.stock_quantity || product.quantity || 0;
         
-        if (existingItem) {
-          if (existingItem.quantity < stock) {
-            existingItem.quantity++;
+        try {
+          if (existingItem) {
+            if (existingItem.quantity < stock) {
+              // Update quantity in database
+              await cartService.updateItem({ productId, quantity: existingItem.quantity + 1 });
+            } else {
+              alert("Cannot add more - stock limit reached");
+              return;
+            }
           } else {
-            alert("Cannot add more - stock limit reached");
-            return;
+            // Add new item to database
+            await cartService.addItem(productId, 1);
           }
-        } else {
-          cart.push({ product, quantity: 1 });
+          
+          // Reload cart from database to ensure consistency
+          await loadCart();
+        } catch (error) {
+          console.error("Failed to add to cart:", error);
+          alert("Failed to add item to cart: " + (error.message || "Please try again"));
         }
-        
-        renderCart();
       }
       
-      function removeFromCart(productId) {
-        cart = cart.filter(item => item.product.id !== productId);
-        renderCart();
+      async function removeFromCart(productId) {
+        try {
+          await cartService.removeItem(productId);
+          // Reload cart from database to ensure consistency
+          await loadCart();
+        } catch (error) {
+          console.error("Failed to remove from cart:", error);
+          alert("Failed to remove item: " + (error.message || "Please try again"));
+        }
       }
       
-      function updateQuantity(productId, delta) {
+      async function updateQuantity(productId, delta) {
         const item = cart.find(i => i.product.id === productId);
         if (!item) return;
         
         const stock = item.product.stock_quantity || item.product.quantity || 0;
         const newQty = item.quantity + delta;
         
-        if (newQty <= 0) {
-          removeFromCart(productId);
-        } else if (newQty <= stock) {
-          item.quantity = newQty;
-          renderCart();
-        } else {
-          alert("Cannot add more - stock limit reached");
+        try {
+          if (newQty <= 0) {
+            await removeFromCart(productId);
+          } else if (newQty <= stock) {
+            // Update quantity in database
+            await cartService.updateItem({ productId, quantity: newQty });
+            // Reload cart from database to ensure consistency
+            await loadCart();
+          } else {
+            alert("Cannot add more - stock limit reached");
+          }
+        } catch (error) {
+          console.error("Failed to update quantity:", error);
+          alert("Failed to update quantity: " + (error.message || "Please try again"));
         }
       }
       
@@ -343,10 +386,16 @@ function posPage() {
       });
       
       // Clear cart
-      clearCartBtn?.addEventListener("click", () => {
+      clearCartBtn?.addEventListener("click", async () => {
         if (cart.length && confirm("Clear all items from cart?")) {
-          cart = [];
-          renderCart();
+          try {
+            await cartService.clearCart();
+            cart = [];
+            renderCart();
+          } catch (error) {
+            console.error("Failed to clear cart:", error);
+            alert("Failed to clear cart: " + (error.message || "Please try again"));
+          }
         }
       });
       
@@ -361,10 +410,8 @@ function posPage() {
         `;
         
         try {
-          // First add items to cart via API
-          for (const item of cart) {
-            await cartService.addItem(item.product.id, item.quantity);
-          }
+          // Cart is already synced to database, so we can checkout directly
+          // (Items were added/updated in real-time as user interacted with cart)
           
           // Then checkout
           const result = await ordersService.checkout({
@@ -426,8 +473,8 @@ function posPage() {
         loadProducts(searchInput?.value || "", e.target.value);
       });
       
-      // Initial load
-      await loadProducts();
+      // Initial load - load both products and cart
+      await Promise.all([loadProducts(), loadCart()]);
       
       return () => {
         clearTimeout(searchTimeout);

@@ -200,21 +200,33 @@ function productFormPage() {
           </div>
           
           <!-- Action Buttons -->
-          <div class="flex justify-end gap-4">
-            <button 
-              type="button"
-              data-route="products"
-              class="px-6 py-3 rounded-lg bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark font-medium hover:bg-border-light dark:hover:bg-border-dark transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit"
-              data-submit-btn
-              class="px-6 py-3 rounded-lg bg-primary text-white font-bold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Save Product
-            </button>
+          <div class="flex justify-between items-center gap-4">
+            <div>
+              <button 
+                type="button"
+                data-delete-btn
+                class="hidden flex items-center gap-2 px-6 py-3 rounded-lg bg-danger/10 text-danger font-medium hover:bg-danger/20 transition-colors"
+              >
+                <span class="material-symbols-outlined text-lg">delete</span>
+                Delete Product
+              </button>
+            </div>
+            <div class="flex gap-4">
+              <button 
+                type="button"
+                data-route="products"
+                class="px-6 py-3 rounded-lg bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark font-medium hover:bg-border-light dark:hover:bg-border-dark transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                data-submit-btn
+                class="px-6 py-3 rounded-lg bg-primary text-white font-bold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save Product
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -232,10 +244,17 @@ function productFormPage() {
 
       const productId = sessionStorage.getItem("gms:activeProductId");
       const isEditMode = Boolean(productId);
+      const deleteBtn = document.querySelector("[data-delete-btn]");
 
       // Update heading for edit mode
       if (isEditMode && headingEl) {
         headingEl.textContent = "Edit Product";
+      }
+
+      // Show delete button in edit mode
+      if (isEditMode && deleteBtn) {
+        deleteBtn.classList.remove("hidden");
+        deleteBtn.classList.add("flex");
       }
 
       // Load suppliers
@@ -366,12 +385,53 @@ function productFormPage() {
       }
 
       function toggleLoading(loading) {
-        if (!submitBtn) return;
-        submitBtn.disabled = loading;
-        submitBtn.innerHTML = loading
-          ? '<span class="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>'
-          : "Save Product";
+        if (submitBtn) {
+          submitBtn.disabled = loading;
+          submitBtn.innerHTML = loading
+            ? '<span class="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>'
+            : "Save Product";
+        }
+        if (deleteBtn) {
+          deleteBtn.disabled = loading;
+        }
       }
+
+      // Delete button handler
+      deleteBtn?.addEventListener("click", async () => {
+        if (!productId) return;
+        
+        // Get product name for confirmation
+        let productName = "this product";
+        try {
+          const response = await productsService.getById(productId);
+          const product = response?.data ?? response;
+          if (product?.name) {
+            productName = `"${product.name}"`;
+          }
+        } catch (error) {
+          console.error("Failed to load product name:", error);
+        }
+        
+        if (!confirm(`Are you sure you want to delete ${productName}? This action cannot be undone.`)) {
+          return;
+        }
+        
+        try {
+          toggleLoading(true);
+          showStatus("Deleting product...", "info");
+          
+          await productsService.remove(productId);
+          showStatus("Product deleted successfully!", "success");
+          
+          sessionStorage.removeItem("gms:activeProductId");
+          setTimeout(() => navigate("products"), 1500);
+        } catch (error) {
+          console.error("Failed to delete product:", error);
+          showStatus(error.message || "Failed to delete product. Please try again.", "error");
+        } finally {
+          toggleLoading(false);
+        }
+      });
 
       // Form submission
       form?.addEventListener("submit", async (e) => {

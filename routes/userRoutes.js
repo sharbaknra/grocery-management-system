@@ -7,6 +7,7 @@ const allowRoles = require('../middleware/roleMiddleware');
 // public routes
 router.post('/register', userController.register);
 router.post('/login', userController.login);
+router.post('/logout', userController.logout);
 
 // Staff management routes (admin and manager only)
 router.get('/', verifyToken, allowRoles('admin', 'manager'), userController.getAllUsers);
